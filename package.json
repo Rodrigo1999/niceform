@@ -1,6 +1,6 @@
 {
   "name": "niceform",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Dynamic form workhorse for react",
   "main": "./dist/index.js",
   "scripts": {
@@ -35,7 +35,7 @@
   "bugs": {
     "url": "https://github.com/Rodrigo1999/niceform/issues"
   },
-  "homepage": "https://github.com/Rodrigo1999/niceform#readme",
+  "homepage": "https://rodrigo1999.github.io/niceform",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Rodrigo1999/niceform.git"
