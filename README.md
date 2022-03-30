@@ -1,6 +1,6 @@
 # Niceform
 
-# Installation
+## Installation
 
 ```bash
 yarn add niceform

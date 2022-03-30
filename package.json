@@ -1,6 +1,6 @@
 {
   "name": "niceform",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Dynamic form workhorse for react",
   "main": "./dist/index.js",
   "scripts": {
