@@ -1,6 +1,6 @@
 {
   "name": "niceform",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dynamic form workhorse for react",
   "main": "./dist/index.js",
   "scripts": {
@@ -10,6 +10,8 @@
     "dist"
   ],
   "keywords": [
+    "niceform",
+    "nice-form",
     "formulário",
     "form",
     "forms",
@@ -29,12 +31,12 @@
   "author": "Rodrigo Santos",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Rodrigo1999/dyform/issues"
+    "url": "https://github.com/Rodrigo1999/niceform/issues"
   },
-  "homepage": "https://github.com/Rodrigo1999/dyform#readme",
+  "homepage": "https://github.com/Rodrigo1999/niceform#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Rodrigo1999/dyform.git"
+    "url": "git+https://github.com/Rodrigo1999/niceform.git"
   },
   "types": "./dist/index.d.ts",
   "peerDependencies": {
