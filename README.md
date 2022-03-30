@@ -8,4 +8,4 @@ yarn add niceform
 npm install niceform
 ```
 
-**[DOC](https://rodrigo1999.github.io/niceform)**
+**[DOCUMENTATION](https://rodrigo1999.github.io/niceform)**
