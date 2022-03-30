@@ -372,7 +372,7 @@ export interface Create {
     /**
      * Error handling of form fields
      * @example
-     * import { create } from 'niceform';
+     * import { create } from 'dynamic-react-form';
      * export default function create(data => ({
      *      errorsControl: [
                 data => {
@@ -388,7 +388,7 @@ export interface Create {
     /**
      * Here I define the components that must be used in the form
      * @example
-     * import { create } from 'niceform';
+     * import { create } from 'dynamic-react-form';
      * export default function create(data => ({
      *      components: [
                 {
@@ -415,7 +415,7 @@ export interface Create {
     /**
      * Error listener, triggered every time a field is configured as invalid for submission
      * @example
-     * import { create } from 'niceform';
+     * import { create } from 'dynamic-react-form';
      * export default function create(data => ({
      *      onError(errors){
      *          alert('Review the fields')
@@ -430,7 +430,7 @@ export interface Create {
     /**
      * Here I define a form submission button
      * @example
-     * import { create } from 'niceform';
+     * import { create } from 'dynamic-react-form';
      * export default function create(data => ({
      *      button: (
                 <Button
@@ -593,7 +593,7 @@ export interface Props extends Row {
      */
     fixedValues?: Object;
     /**
-     * Static fields, they don't appear on the form, but niceform considers it as any field
+     * Static fields, they don't appear on the form, but dynamic-react-form considers it as any field
      * @example
      * <Form
             staticFields={[
@@ -614,7 +614,7 @@ export interface Props extends Row {
      */
     staticFields?: Array<Field>;
     /**
-     * Static fields, they don't appear on the form, but niceform considers it as any field
+     * Static fields, they don't appear on the form, but dynamic-react-form considers it as any field
      * @example
      * <Form
      *      beforeButtonElement={(
@@ -743,7 +743,7 @@ export interface Props extends Row {
      */
     validationSchema?: any;
     /**
-     * Equivalent to `create` imported from niceform, useful in case I want to configure the form locally
+     * Equivalent to `create` imported from dynamic-react-form, useful in case I want to configure the form locally
      * @example
      * <Form
      *      create={data => ({
