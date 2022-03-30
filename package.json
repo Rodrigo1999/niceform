@@ -1,0 +1,55 @@
+{
+  "name": "dyform",
+  "version": "0.1.0",
+  "description": "Dynamic form workhorse for react",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "formulário",
+    "form",
+    "forms",
+    "fields",
+    "react",
+    "react hooks",
+    "validation",
+    "validação",
+    "dynamic",
+    "formulario",
+    "component",
+    "custom",
+    "auto",
+    "field",
+    "workhorse"
+  ],
+  "author": "Rodrigo Santos",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Rodrigo1999/dyform/issues"
+  },
+  "homepage": "https://github.com/Rodrigo1999/dyform#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rodrigo1999/dyform.git"
+  },
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.6.1",
+    "@types/react": "^17.0.8",
+    "@types/react-dom": "^17.0.5",
+    "@types/styled-components": "^5.1.14",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "dynamic-react-grid": "^0.1.4"
+  }
+}
