@@ -1,5 +1,5 @@
 {
-  "name": "dyform",
+  "name": "niceform",
   "version": "0.1.0",
   "description": "Dynamic form workhorse for react",
   "main": "./dist/index.js",
