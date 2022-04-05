@@ -68,8 +68,10 @@ var Form = function (props, ref) {
         onError: function () { return null; },
         ComponentWrap: dynamic_react_grid_1.default,
         button: undefined,
-        footerProps: {}
+        footerProps: {},
+        context: {}
     });
+    props = __assign(__assign({}, Context.current.context), props);
     var lastChangedField = (0, react_2.useRef)([]);
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
@@ -186,6 +188,7 @@ var Form = function (props, ref) {
         ComponentWrap: propsContext.ComponentWrap || localContext.ComponentWrap || dynamic_react_grid_1.default,
         button: propsContext.button || localContext.button,
         footerProps: propsContext.footerProps || localContext.footerProps,
+        context: propsContext.context || localContext.context,
     };
     //---------------------------------------------- controle de referência -------------------------------------
     (0, react_2.useImperativeHandle)(Object.keys(props.innerRef || ref || {}).length ? props.innerRef || ref : { current: null }, function () { return (__assign(__assign({}, argumentsToContexts), { form: form === null || form === void 0 ? void 0 : form.current, setValues: hookValues.setValues })); });

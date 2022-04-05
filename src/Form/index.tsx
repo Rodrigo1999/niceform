@@ -14,8 +14,10 @@ let Form = function (props: Props, ref) {
         onError: () => null,
         ComponentWrap: Grid,
         button: undefined,
-        footerProps: {}
+        footerProps: {},
+        context: {}
     });
+    props = {...Context.current.context, ...props}
     let lastChangedField = useRef([] as ([name: any, value: any] | []))
     let isSubmited = useRef(false)
     let form = useRef<HTMLFormElement>(null);
@@ -130,6 +132,7 @@ let Form = function (props: Props, ref) {
         ComponentWrap: propsContext.ComponentWrap || localContext.ComponentWrap || Grid,
         button: propsContext.button || localContext.button,
         footerProps: propsContext.footerProps || localContext.footerProps,
+        context: propsContext.context || localContext.context,
     }
     
     

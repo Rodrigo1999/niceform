@@ -75,7 +75,7 @@ export default function useErrors({fields, errorsControl, yupSchema, values, has
             fd.forEach(field => {
                 if(field.name) delete errorsCloned[field.name];
             })
-            if(name && !errors[name.toLowerCase()] && !errorsResult[name.toLowerCase()]){
+            if(name && !errors[name.toString()] && !errorsResult[name.toString()]){
                 return errors;
             }
             return {...errorsCloned, ...errorsResult}

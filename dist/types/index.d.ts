@@ -449,6 +449,7 @@ export interface Create {
      * Step anything, it will be inserted in the tag considered as footer of the form
      */
     footerProps?: Object;
+    context: Omit<Props, 'fields' | 'staticFields' | 'onSubmit' | 'initialValues' | 'onChangeField' | 'onBeforeSubmit' | 'innerRef' | 'validationSchema' | 'create' | 'children'>;
 }
 export interface ParamsCreate {
     /**

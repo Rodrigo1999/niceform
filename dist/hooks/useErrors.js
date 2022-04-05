@@ -162,7 +162,7 @@ function useErrors(_a) {
                             if (field.name)
                                 delete errorsCloned[field.name];
                         });
-                        if (name && !errors[name.toLowerCase()] && !errorsResult[name.toLowerCase()]) {
+                        if (name && !errors[name.toString()] && !errorsResult[name.toString()]) {
                             return errors;
                         }
                         return __assign(__assign({}, errorsCloned), errorsResult);
