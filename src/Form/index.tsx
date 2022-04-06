@@ -23,7 +23,8 @@ let Form = function (props: Props, ref) {
     let form = useRef<HTMLFormElement>(null);
     let fieldsFromChildren = useRef<Array<Field>>([]);
 
-    let fields = !props.children ? props?.fields?.concat?.((props.staticFields || []).filter(e => e.active != false)) : fieldsFromChildren.current.length ? fieldsFromChildren.current : undefined
+    let fieldsToSet = !props.children ? props?.fields : fieldsFromChildren.current.length ? fieldsFromChildren.current : []
+    let fields = fieldsToSet?.concat?.((props.staticFields || []).filter(e => e.active != false))
 
     let hookValues = useValues({
         fields,
@@ -61,7 +62,11 @@ let Form = function (props: Props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value
             }
-            
+
+            const fd = getAllFields(fieldsToSet || []).find(e => e.name == _name)
+
+            if(fd?.active === false) props.onChangeField?.(fd, _value, others)
+
             hookValues.changeValue(_name, _value, function (field, value) {
                 lastChangedField.current = [_name, _value]
                 props.onChangeField?.(field, value, others)
