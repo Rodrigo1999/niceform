@@ -70,7 +70,7 @@ export function getValuesByKeyRange(values: Object) {
     function getKeysRange(obj) {
         let entries = Object.entries(obj)
         let map = entries.map((e: Array<any>) => {
-            if (Array.isArray(e[1]) || e[1].constructor == ({}).constructor) {
+            if (Array.isArray(e[1]) || e[1]?.constructor == ({}).constructor) {
                 return getKeysRange(e[1]).map(n => `${e[0]}.${n}`)
             } else {
                 arrValues.push(e[1])

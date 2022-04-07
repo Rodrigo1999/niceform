@@ -131,7 +131,8 @@ function getValuesByKeyRange(values) {
     function getKeysRange(obj) {
         var entries = Object.entries(obj);
         var map = entries.map(function (e) {
-            if (Array.isArray(e[1]) || e[1].constructor == ({}).constructor) {
+            var _a;
+            if (Array.isArray(e[1]) || ((_a = e[1]) === null || _a === void 0 ? void 0 : _a.constructor) == ({}).constructor) {
                 return getKeysRange(e[1]).map(function (n) { return "".concat(e[0], ".").concat(n); });
             }
             else {
