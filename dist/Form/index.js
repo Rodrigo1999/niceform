@@ -102,7 +102,6 @@ var Form = function (props, ref) {
             isSubmited.current = false;
         },
         changeValue: function (evt, value, others) {
-            var _a;
             var _name = '';
             var _value;
             if (typeof evt == 'string') {
@@ -113,14 +112,12 @@ var Form = function (props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value;
             }
-            var fd = (0, utils_1.getAllFields)(fieldsToSet || []).find(function (e) { return e.name == _name; });
-            if ((fd === null || fd === void 0 ? void 0 : fd.active) === false)
-                (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, fd, _value, others);
+            var fd = (0, utils_1.getAllFields)(fieldsToSet || []).find(function (e) { return e.name == _name && e.active === false; });
             hookValues.changeValue(_name, _value, function (field, value) {
                 var _a;
                 lastChangedField.current = [_name, _value];
-                (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field, value, others);
-            }, !!(this === null || this === void 0 ? void 0 : this.fromChildren));
+                (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
+            });
         }
     }); }, [JSON.stringify(fieldsFromChildren.current)]);
     //---------------------------------------------- submição de formulário -------------------------------------
@@ -228,7 +225,7 @@ var Form = function (props, ref) {
         }));
     };
     //---------------------------------------------- COMPONENTE -------------------------------------
-    return ((0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? props.children(__assign(__assign({}, argumentsToContexts), { changeValue: actions.changeValue.bind({ fromChildren: true }) })) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_d = props.grid) === null || _d === void 0 ? void 0 : _d.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
+    return ((0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? props.children(argumentsToContexts) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_d = props.grid) === null || _d === void 0 ? void 0 : _d.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
                     (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, (_e = Context === null || Context === void 0 ? void 0 : Context.current) === null || _e === void 0 ? void 0 : _e.footerProps, { children: [props.beforeButtonElement, props.onSubmit && ((_g = Context === null || Context === void 0 ? void 0 : Context.current) === null || _g === void 0 ? void 0 : _g.button), props.afterButtonElement] }))] })) })));
 };
 var create = function (data) { return (0, react_2.forwardRef)(Form.bind(data)); };

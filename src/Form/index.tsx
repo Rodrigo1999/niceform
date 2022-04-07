@@ -63,14 +63,12 @@ let Form = function (props: Props, ref) {
                 _value = evt.target.value
             }
 
-            const fd = getAllFields(fieldsToSet || []).find(e => e.name == _name)
-
-            if(fd?.active === false) props.onChangeField?.(fd, _value, others)
+            const fd = getAllFields(fieldsToSet || []).find(e => e.name == _name && e.active === false)
 
             hookValues.changeValue(_name, _value, function (field, value) {
                 lastChangedField.current = [_name, _value]
-                props.onChangeField?.(field, value, others)
-            }, !!this?.fromChildren);
+                props.onChangeField?.(field || fd, value, others)
+            });
         }
     }), [JSON.stringify(fieldsFromChildren.current)])
     
@@ -210,7 +208,7 @@ let Form = function (props: Props, ref) {
     //---------------------------------------------- COMPONENTE -------------------------------------
     return (
         <form onSubmit={submit} ref={form}>
-            {props.children ? props.children({...argumentsToContexts, changeValue:  actions.changeValue.bind({fromChildren: true})}) : (
+            {props.children ? props.children(argumentsToContexts) : (
                 <>
                     <Context.current.ComponentWrap
                         {...configRow}

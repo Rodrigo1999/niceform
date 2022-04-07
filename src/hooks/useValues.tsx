@@ -34,19 +34,12 @@ export default function useValues({fields, initialValues, hasChildrenInstance}: 
     }
     
     //---------------------------------------------- altera o valor de um determinado campo -------------------------------------
-    let changeValue = (name: any, val: any, cb?: Function, fromChildren?: boolean) => {
-        if(!fields || fromChildren) {
-            return setValues(values => {
-                resolveValue(values, name, val)
-                return {...values}
-            })
-        }
-        let fd = allFields.find(e => e.active != false && e.name == name)
+    let changeValue = (name: any, val: any, cb?: Function) => {
 
-        if(!fd) return false;
+        let fd = fields ? allFields.find(e => e.active != false && e.name == name) : undefined
         
         setValues((values: ValueKeys) => {
-            if(fd?.dependence){
+            if(fd && fd.dependence){
                 let dependence = fd.dependence?.split?.('-');
                 allFields.forEach(e => {
                     if(!e.dependence) return false;

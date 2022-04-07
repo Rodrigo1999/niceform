@@ -42,19 +42,11 @@ function useValues(_a) {
         }
     };
     //---------------------------------------------- altera o valor de um determinado campo -------------------------------------
-    var changeValue = function (name, val, cb, fromChildren) {
-        if (!fields || fromChildren) {
-            return setValues(function (values) {
-                (0, utils_1.resolveValue)(values, name, val);
-                return __assign({}, values);
-            });
-        }
-        var fd = allFields.find(function (e) { return e.active != false && e.name == name; });
-        if (!fd)
-            return false;
+    var changeValue = function (name, val, cb) {
+        var fd = fields ? allFields.find(function (e) { return e.active != false && e.name == name; }) : undefined;
         setValues(function (values) {
             var _a, _b;
-            if (fd === null || fd === void 0 ? void 0 : fd.dependence) {
+            if (fd && fd.dependence) {
                 var dependence_1 = (_b = (_a = fd.dependence) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '-');
                 allFields.forEach(function (e) {
                     if (!e.dependence)
