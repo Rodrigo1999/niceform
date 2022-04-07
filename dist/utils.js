@@ -131,7 +131,7 @@ function getValuesByKeyRange(values) {
     function getKeysRange(obj) {
         var entries = Object.entries(obj);
         var map = entries.map(function (e) {
-            if (typeof e[1] == 'object') {
+            if (Array.isArray(e[1]) || e[1].constructor == ({}).constructor) {
                 return getKeysRange(e[1]).map(function (n) { return "".concat(e[0], ".").concat(n); });
             }
             else {
@@ -141,7 +141,7 @@ function getValuesByKeyRange(values) {
         });
         return map.flatMap(function (e) { return e; });
     }
-    return getKeysRange(values || {}).reduce(function (obj, e, i) {
+    return getKeysRange(values).reduce(function (obj, e, i) {
         obj[e] = arrValues[i];
         return obj;
     }, {});
