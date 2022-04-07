@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Field, ValueKeys } from '../types';
 import { ReturnUseValuesFunction, UseValuesFunctionParams } from '../types/hooks';
-import { getAllFields, resolveInitialValue, resolveValue } from '../utils';
+import { getAllFields, resolveInitialValue, resolveValue, getValuesByKeyRange } from '../utils';
 
 function callbackGetAllFields(fields, initialValues){
     let _fields = fields || [];
@@ -74,5 +74,5 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
         setInitialValues();
     }, [initialValues])
 
-    return {values, cleanValues, setValues, setInitialValues, changeValue};
+    return {values, cleanValues, setValues, setInitialValues, changeValue, valuesChain: getValuesByKeyRange(values)};
 }

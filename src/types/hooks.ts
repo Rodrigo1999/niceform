@@ -4,6 +4,7 @@ export interface UseValuesFunctionParams<Fields>{
 }
 export interface ReturnUseValuesFunction<Fields>{
     values: Object, 
+    valuesChain: Object, 
     setValues: Function,
     cleanValues: () => void, 
     setInitialValues: () => void,

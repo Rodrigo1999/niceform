@@ -39,6 +39,10 @@ interface ContentParams {
       */
     values: Object,
     /**
+     * Returns form values range of an array or object
+    */
+    valuesChain: Object,
+    /**
      * Returns form values
      */
     fields: Array<Field>,
@@ -473,6 +477,10 @@ export interface ParamsCreate {
      * Returns form values
      */
     values: Object,
+    /**
+     * Returns form values range of an array or object
+    */
+    valuesChain: Object,
     /**
      * With this function we can change the value of a certain form field
      */

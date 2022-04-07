@@ -79,6 +79,6 @@ function useValues(_a) {
     (0, react_1.useEffect)(function () {
         setInitialValues();
     }, [initialValues]);
-    return { values: values, cleanValues: cleanValues, setValues: setValues, setInitialValues: setInitialValues, changeValue: changeValue };
+    return { values: values, cleanValues: cleanValues, setValues: setValues, setInitialValues: setInitialValues, changeValue: changeValue, valuesChain: (0, utils_1.getValuesByKeyRange)(values) };
 }
 exports.default = useValues;

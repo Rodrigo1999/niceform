@@ -114,6 +114,7 @@ let Form = function (props: Props, ref) {
         props,
         errors: hookErrors.errors,
         values: hookValues.values,
+        valuesChain: hookValues.valuesChain,
         verifyAllErrors: hookErrors.verifyAllErrors,
         changeValue: actions.changeValue,
         submit,

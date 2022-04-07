@@ -171,6 +171,7 @@ var Form = function (props, ref) {
         props: props,
         errors: hookErrors.errors,
         values: hookValues.values,
+        valuesChain: hookValues.valuesChain,
         verifyAllErrors: hookErrors.verifyAllErrors,
         changeValue: actions.changeValue,
         submit: submit,
