@@ -21,11 +21,9 @@ function callbackGetAllFields(fields, initialValues) {
     return (0, utils_1.getAllFields)(_fields);
 }
 function useValues(_a) {
-    var fields = _a.fields, initialValues = _a.initialValues, hasChildrenInstance = _a.hasChildrenInstance;
+    var fields = _a.fields, initialValues = _a.initialValues;
     var _b = (0, react_1.useState)({}), values = _b[0], setValues = _b[1];
     var allFields = (0, react_1.useMemo)(function () { return callbackGetAllFields(fields, initialValues); }, [fields, initialValues]);
-    if (hasChildrenInstance)
-        allFields = callbackGetAllFields(fields, initialValues);
     //---------------------------------------------- seta o valor inicial do formulário -------------------------------------
     var setInitialValues = function () {
         var fieldsActives = allFields.filter(function (e) { return e.active != false; });

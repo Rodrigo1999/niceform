@@ -10,10 +10,9 @@ function callbackGetAllFields(fields, initialValues){
     }
     return getAllFields(_fields)
 }
-export default function useValues({fields, initialValues, hasChildrenInstance}: UseValuesFunctionParams<Field>) : ReturnUseValuesFunction<Field>{
+export default function useValues({fields, initialValues}: UseValuesFunctionParams<Field>) : ReturnUseValuesFunction<Field>{
     let [values, setValues] = useState({});
     let allFields: Array<Field> = useMemo(() => callbackGetAllFields(fields, initialValues), [fields, initialValues])
-    if(hasChildrenInstance) allFields = callbackGetAllFields(fields, initialValues)
     //---------------------------------------------- seta o valor inicial do formulário -------------------------------------
     let setInitialValues = () => {
 		let fieldsActives =  allFields.filter(e => e.active != false);

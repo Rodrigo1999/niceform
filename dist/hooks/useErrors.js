@@ -58,11 +58,9 @@ function callbackGetAllFields(fields, values) {
 }
 function useErrors(_a) {
     var _this = this;
-    var fields = _a.fields, errorsControl = _a.errorsControl, yupSchema = _a.yupSchema, values = _a.values, hasChildrenInstance = _a.hasChildrenInstance;
+    var fields = _a.fields, errorsControl = _a.errorsControl, yupSchema = _a.yupSchema, values = _a.values;
     var _b = (0, react_1.useState)({}), errors = _b[0], setErrors = _b[1];
     var allFields = (0, react_1.useMemo)(function () { return callbackGetAllFields(fields, values); }, [fields, values]);
-    if (hasChildrenInstance)
-        allFields = callbackGetAllFields(fields, values);
     //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
     var verifyErrors = function (field) { return __awaiter(_this, void 0, void 0, function () {
         var errors, _loop_1, index, value_1, err;

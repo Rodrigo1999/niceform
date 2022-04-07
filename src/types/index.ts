@@ -54,6 +54,10 @@ interface ContentParams {
       * Returns all the props of the <Form> component
       */
     submit: (evt?: EventTarget) => void,
+    /**
+     * Renders a field based on the passed json object
+     */
+    renderField: (obj: Field) => any
 }
 interface Breakpoints {
     xs?: number,

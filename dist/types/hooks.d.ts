@@ -1,7 +1,6 @@
 export interface UseValuesFunctionParams<Fields> {
     fields?: Array<Fields>;
     initialValues?: Object;
-    hasChildrenInstance: boolean;
 }
 export interface ReturnUseValuesFunction<Fields> {
     values: Object;
@@ -20,7 +19,6 @@ export interface useErrorsFunctionParams<Fields> {
         validateSchema: (schema: any) => Promise<any>;
     }) => useErrorsFunctionParamsReturn | Promise<useErrorsFunctionParamsReturn>>;
     values: Object;
-    hasChildrenInstance: boolean;
 }
 export interface ReturnUseErrorsFunctionParams {
     errors: Object;

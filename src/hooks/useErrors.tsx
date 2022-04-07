@@ -11,11 +11,10 @@ function callbackGetAllFields(fields, values){
     return getAllFields(_fields)
 }
 
-export default function useErrors({fields, errorsControl, yupSchema, values, hasChildrenInstance}: useErrorsFunctionParams<Field>): ReturnUseErrorsFunctionParams{
+export default function useErrors({fields, errorsControl, yupSchema, values}: useErrorsFunctionParams<Field>): ReturnUseErrorsFunctionParams{
     let [errors, setErrors] = useState({});
     
     let allFields: Array<Field> = useMemo(() => callbackGetAllFields(fields, values), [fields, values])
-    if(hasChildrenInstance) allFields = callbackGetAllFields(fields, values)
     //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
     let verifyErrors = async (field) => {
         let errors = {};

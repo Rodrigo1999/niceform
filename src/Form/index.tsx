@@ -23,21 +23,18 @@ let Form = function (props: Props, ref) {
     let form = useRef<HTMLFormElement>(null);
     let fieldsFromChildren = useRef<Array<Field>>([]);
 
-    let fieldsToSet = !props.children ? props?.fields : fieldsFromChildren.current.length ? fieldsFromChildren.current : []
-    let fields = fieldsToSet?.concat?.((props.staticFields || []).filter(e => e.active != false))
+    let fields = props?.fields?.concat?.((props.staticFields || []).filter(e => e.active != false))
 
     let hookValues = useValues({
-        fields,
-        initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues]),
-        hasChildrenInstance: !!props.children && !!fieldsFromChildren.current.length
+        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []).filter(e => e.active != false),
+        initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
 
     let hookErrors = useErrors({
-        fields,
+        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []).filter(e => e.active != false),
         values: hookValues.values,
         errorsControl: Context?.current?.errorsControl,
-        yupSchema: props.validationSchema,
-        hasChildrenInstance: !!props.children && !!fieldsFromChildren.current.length
+        yupSchema: props.validationSchema
     });
 
     useEffect(() => {
@@ -63,7 +60,7 @@ let Form = function (props: Props, ref) {
                 _value = evt.target.value
             }
 
-            const fd = getAllFields(fieldsToSet || []).find(e => e.name == _name && e.active === false)
+            const fd = getAllFields(props?.fields || []).find(e => e.name == _name && e.active === false)
 
             hookValues.changeValue(_name, _value, function (field, value) {
                 lastChangedField.current = [_name, _value]
@@ -159,7 +156,7 @@ let Form = function (props: Props, ref) {
     function wrapChildren(f: Field) {
         if(fields || props.children){
             if (f.fields) return render(f.fields);
-            if (f.type == 'component' && f.content) return f.content({...argumentsToContexts, fields: !props.children ? (fields || []) : []});
+            if (f.type == 'component' && f.content) return f.content({...argumentsToContexts, fields: fields || []});
 
             let _f = filterProperty(f, ['input', 'output'])
             return (getComponentBase(Context?.current?.components, _f) || getComponentBase(Context?.current?.components, _f, 'default'))?.content?.(_f);
