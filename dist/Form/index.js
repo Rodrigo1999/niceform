@@ -76,9 +76,9 @@ var Form = function (props, ref) {
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
     var fieldsFromChildren = (0, react_2.useRef)([]);
-    var fields = (_b = (_a = props === null || props === void 0 ? void 0 : props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, (props.staticFields || []).filter(function (e) { return e.active != false; }));
+    var fields = (_b = (_a = props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, props.staticFields || []);
     var hookValues = (0, useValues_1.default)({
-        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []).filter(function (e) { return e.active != false; }),
+        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []),
         initialValues: (0, react_2.useMemo)(function () { return Object.assign({}, props.initialValues, props.fixedValues); }, [props.initialValues, props.fixedValues])
     });
     var hookErrors = (0, useErrors_1.default)({

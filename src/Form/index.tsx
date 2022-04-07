@@ -23,10 +23,10 @@ let Form = function (props: Props, ref) {
     let form = useRef<HTMLFormElement>(null);
     let fieldsFromChildren = useRef<Array<Field>>([]);
 
-    let fields = props?.fields?.concat?.((props.staticFields || []).filter(e => e.active != false))
+    let fields = props.fields?.concat?.(props.staticFields || [])
 
     let hookValues = useValues({
-        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []).filter(e => e.active != false),
+        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []),
         initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
 

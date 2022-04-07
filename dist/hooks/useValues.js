@@ -41,24 +41,26 @@ function useValues(_a) {
     };
     //---------------------------------------------- altera o valor de um determinado campo -------------------------------------
     var changeValue = function (name, val, cb) {
-        var fd = fields ? allFields.find(function (e) { return e.active != false && e.name == name; }) : undefined;
-        setValues(function (values) {
-            var _a, _b;
-            if (fd && fd.dependence) {
-                var dependence_1 = (_b = (_a = fd.dependence) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '-');
-                allFields.forEach(function (e) {
-                    if (!e.dependence)
-                        return false;
-                    var thisDependence = e.dependence.split('-');
-                    if (dependence_1[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence_1[1])) {
-                        if (e.name)
-                            (0, utils_1.resolveValue)(values, e.name, undefined, true);
-                    }
-                });
-            }
-            (0, utils_1.resolveValue)(values, name, val);
-            return __assign({}, values);
-        });
+        var fd = fields ? allFields.find(function (e) { return e.name == name; }) : undefined;
+        if ((fd === null || fd === void 0 ? void 0 : fd.active) !== false) {
+            setValues(function (values) {
+                var _a, _b;
+                if (fd === null || fd === void 0 ? void 0 : fd.dependence) {
+                    var dependence_1 = (_b = (_a = fd.dependence) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '-');
+                    allFields.forEach(function (e) {
+                        if (!e.dependence)
+                            return false;
+                        var thisDependence = e.dependence.split('-');
+                        if (dependence_1[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence_1[1])) {
+                            if (e.name)
+                                (0, utils_1.resolveValue)(values, e.name, undefined, true);
+                        }
+                    });
+                }
+                (0, utils_1.resolveValue)(values, name, val);
+                return __assign({}, values);
+            });
+        }
         cb === null || cb === void 0 ? void 0 : cb(fd, val);
     };
     //---------------------------------------------- limpesa do formulário-------------------------------------

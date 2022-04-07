@@ -35,22 +35,25 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
     //---------------------------------------------- altera o valor de um determinado campo -------------------------------------
     let changeValue = (name: any, val: any, cb?: Function) => {
 
-        let fd = fields ? allFields.find(e => e.active != false && e.name == name) : undefined
+        let fd = fields ? allFields.find(e => e.name == name) : undefined
         
-        setValues((values: ValueKeys) => {
-            if(fd && fd.dependence){
-                let dependence = fd.dependence?.split?.('-');
-                allFields.forEach(e => {
-                    if(!e.dependence) return false;
-                    let thisDependence = e.dependence.split('-');
-                    if(dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])){
-                        if(e.name) resolveValue(values, e.name, undefined, true)
-                    }
-                });
-            }
-            resolveValue(values, name, val);
-            return {...values}
-        });
+        if(fd?.active !== false){
+            setValues((values: ValueKeys) => {
+                if(fd?.dependence){
+                    let dependence = fd.dependence?.split?.('-');
+                    allFields.forEach(e => {
+                        if(!e.dependence) return false;
+                        let thisDependence = e.dependence.split('-');
+                        if(dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])){
+                            if(e.name) resolveValue(values, e.name, undefined, true)
+                        }
+                    });
+                }
+                resolveValue(values, name, val);
+                return {...values}
+            });
+        }
+        
         cb?.(fd, val);
     }
 
