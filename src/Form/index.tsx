@@ -67,7 +67,7 @@ let Form = function (props: Props, ref) {
                 props.onChangeField?.(field || fd, value, others)
             });
         }
-    }), [JSON.stringify(fieldsFromChildren.current)])
+    }), [])
     
     //---------------------------------------------- submição de formulário -------------------------------------
     let submit = async (evt) => {
