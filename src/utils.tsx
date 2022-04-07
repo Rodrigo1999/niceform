@@ -79,7 +79,7 @@ export function getValuesByKeyRange(values: Object) {
         })
         return map.flatMap(e => e)
     }
-    return getKeysRange(values).reduce((obj, e, i) => {
+    return getKeysRange(values || {}).reduce((obj, e, i) => {
         obj[e] = arrValues[i]
         return obj;
     }, {})

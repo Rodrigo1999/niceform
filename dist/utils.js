@@ -141,7 +141,7 @@ function getValuesByKeyRange(values) {
         });
         return map.flatMap(function (e) { return e; });
     }
-    return getKeysRange(values).reduce(function (obj, e, i) {
+    return getKeysRange(values || {}).reduce(function (obj, e, i) {
         obj[e] = arrValues[i];
         return obj;
     }, {});
