@@ -116,7 +116,7 @@ var Form = function (props, ref) {
                 (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
             });
         }
-    }); }, []);
+    }); }, [JSON.stringify(fieldsFromChildren.current)]);
     //---------------------------------------------- submição de formulário -------------------------------------
     var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
         var errors, cloneValues, fd;
