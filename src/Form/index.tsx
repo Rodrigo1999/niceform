@@ -1,5 +1,5 @@
 import Grid from 'dynamic-react-grid';
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
 import { Create, Field, ParamsCreate, Props } from '../types';
@@ -21,17 +21,17 @@ let Form = function (props: Props, ref) {
     let lastChangedField = useRef([] as ([name: any, value: any] | []))
     let isSubmited = useRef(false)
     let form = useRef<HTMLFormElement>(null);
-    let fieldsFromChildren = useRef<Array<Field>>([]);
+    let [fieldsFromChildren, setFieldsFromChildren] = useState<Array<Field>>([]);
 
     let fields = props.fields?.concat?.(props.staticFields || [])
 
     let hookValues = useValues({
-        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []),
+        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []),
         initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
 
     let hookErrors = useErrors({
-        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []).filter(e => e.active != false),
+        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []).filter(e => e.active != false),
         values: hookValues.values,
         errorsControl: Context?.current?.errorsControl,
         yupSchema: props.validationSchema
@@ -67,7 +67,7 @@ let Form = function (props: Props, ref) {
                 props.onChangeField?.(field || fd, value, others)
             });
         }
-    }), [JSON.stringify(fieldsFromChildren.current)])
+    }), [fieldsFromChildren])
     
     //---------------------------------------------- submição de formulário -------------------------------------
     let submit = async (evt) => {
@@ -100,11 +100,15 @@ let Form = function (props: Props, ref) {
 
     // -------------------------------------------- renderização flúida de um componente-----------------------
     function renderField(obj: Field){
-        let field = fieldsFromChildren.current.find(e => e.name==obj.name)
+        let field = getAllFields(fieldsFromChildren || []).find(e => e.name==obj.name)
+        function filter([key, value]){
+            return typeof value != 'function'
+        }
+        
         if(!field){
-            fieldsFromChildren.current.push(obj)
-        }else if(!dequal(field, obj)){
-            fieldsFromChildren.current = fieldsFromChildren.current.map(e => e.name==obj.name ? obj : e)
+            setFieldsFromChildren(fields => [...fields, obj])
+        }else if(field && !dequal(filterProperty(field || {}, ([key, value]) => typeof value != 'function'), filterProperty(field || {}, ([key, value]) => typeof value != 'function'))){
+            setFieldsFromChildren(fields => [...fields.map(e => e.name==obj.name ? obj : e)])
         }
         return render([obj])[0]
     }

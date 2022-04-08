@@ -46,6 +46,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -75,14 +84,14 @@ var Form = function (props, ref) {
     var lastChangedField = (0, react_2.useRef)([]);
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
-    var fieldsFromChildren = (0, react_2.useRef)([]);
+    var _j = (0, react_2.useState)([]), fieldsFromChildren = _j[0], setFieldsFromChildren = _j[1];
     var fields = (_b = (_a = props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, props.staticFields || []);
     var hookValues = (0, useValues_1.default)({
-        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []),
+        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []),
         initialValues: (0, react_2.useMemo)(function () { return Object.assign({}, props.initialValues, props.fixedValues); }, [props.initialValues, props.fixedValues])
     });
     var hookErrors = (0, useErrors_1.default)({
-        fields: (fields || []).concat(fieldsFromChildren.current.length ? fieldsFromChildren.current : []).filter(function (e) { return e.active != false; }),
+        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []).filter(function (e) { return e.active != false; }),
         values: hookValues.values,
         errorsControl: (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.errorsControl,
         yupSchema: props.validationSchema
@@ -116,7 +125,7 @@ var Form = function (props, ref) {
                 (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
             });
         }
-    }); }, [JSON.stringify(fieldsFromChildren.current)]);
+    }); }, [fieldsFromChildren]);
     //---------------------------------------------- submição de formulário -------------------------------------
     var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
         var errors, cloneValues, fd;
@@ -157,12 +166,22 @@ var Form = function (props, ref) {
     }); };
     // -------------------------------------------- renderização flúida de um componente-----------------------
     function renderField(obj) {
-        var field = fieldsFromChildren.current.find(function (e) { return e.name == obj.name; });
-        if (!field) {
-            fieldsFromChildren.current.push(obj);
+        var field = (0, utils_1.getAllFields)(fieldsFromChildren || []).find(function (e) { return e.name == obj.name; });
+        function filter(_a) {
+            var key = _a[0], value = _a[1];
+            return typeof value != 'function';
         }
-        else if (!(0, utils_1.dequal)(field, obj)) {
-            fieldsFromChildren.current = fieldsFromChildren.current.map(function (e) { return e.name == obj.name ? obj : e; });
+        if (!field) {
+            setFieldsFromChildren(function (fields) { return __spreadArray(__spreadArray([], fields, true), [obj], false); });
+        }
+        else if (field && !(0, utils_1.dequal)((0, utils_1.filterProperty)(field || {}, function (_a) {
+            var key = _a[0], value = _a[1];
+            return typeof value != 'function';
+        }), (0, utils_1.filterProperty)(field || {}, function (_a) {
+            var key = _a[0], value = _a[1];
+            return typeof value != 'function';
+        }))) {
+            setFieldsFromChildren(function (fields) { return __spreadArray([], fields.map(function (e) { return e.name == obj.name ? obj : e; }), true); });
         }
         return render([obj])[0];
     }
