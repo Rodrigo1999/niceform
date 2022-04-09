@@ -92,7 +92,7 @@ var Form = function (props, ref) {
     });
     var hookErrors = (0, useErrors_1.default)({
         fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []).filter(function (e) { return e.active != false; }),
-        values: hookValues.values,
+        values: hookValues.valuesChain,
         errorsControl: (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.errorsControl,
         yupSchema: props.validationSchema
     });

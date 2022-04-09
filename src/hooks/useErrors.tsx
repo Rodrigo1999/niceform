@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Field } from '../types';
 import { ReturnUseErrorsFunctionParams, useErrorsFunctionParams } from '../types/hooks';
-import { errorSchema, getAllFields, resolveValue, validateSchemaOnlyField } from '../utils';
+import { errorSchema, getAllFields, validateSchemaOnlyField } from '../utils';
 
 function callbackGetAllFields(fields, values){
     let _fields = fields || [];
@@ -24,7 +24,7 @@ export default function useErrors({fields, errorsControl, yupSchema, values}: us
                 const functionReturnPersonError = errorsControl[index];
                 
                 if(field.name){
-                    let value = resolveValue(values, field.name)
+                    let value = values[field.name]
                    
                     let err = await functionReturnPersonError({field, value, validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')});
                     if(err) errors[field.name] = err;
@@ -33,7 +33,7 @@ export default function useErrors({fields, errorsControl, yupSchema, values}: us
         }
 
         if(field.error){
-            let value = resolveValue(values, field.name);
+            let value = values[field.name]
             let err = await field.error({
                 fields: allFields, 
                 field, 

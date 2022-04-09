@@ -32,7 +32,7 @@ let Form = function (props: Props, ref) {
 
     let hookErrors = useErrors({
         fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []).filter(e => e.active != false),
-        values: hookValues.values,
+        values: hookValues.valuesChain,
         errorsControl: Context?.current?.errorsControl,
         yupSchema: props.validationSchema
     });

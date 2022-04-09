@@ -76,7 +76,7 @@ function useErrors(_a) {
                                 case 0:
                                     functionReturnPersonError = errorsControl[index];
                                     if (!field.name) return [3 /*break*/, 2];
-                                    value_2 = (0, utils_1.resolveValue)(values, field.name);
+                                    value_2 = values[field.name];
                                     return [4 /*yield*/, functionReturnPersonError({ field: field, value: value_2, validateSchema: function (schema) { return (0, utils_1.validateSchemaOnlyField)(schema, value_2 || ''); } })];
                                 case 1:
                                     err = _b.sent();
@@ -100,7 +100,7 @@ function useErrors(_a) {
                     return [3 /*break*/, 1];
                 case 4:
                     if (!field.error) return [3 /*break*/, 6];
-                    value_1 = (0, utils_1.resolveValue)(values, field.name);
+                    value_1 = values[field.name];
                     return [4 /*yield*/, field.error({
                             fields: allFields,
                             field: field,
