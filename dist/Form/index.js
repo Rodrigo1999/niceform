@@ -167,20 +167,11 @@ var Form = function (props, ref) {
     // -------------------------------------------- renderização flúida de um componente-----------------------
     function renderField(obj) {
         var field = (0, utils_1.getAllFields)(fieldsFromChildren || []).find(function (e) { return e.name == obj.name; });
-        function filter(_a) {
-            var key = _a[0], value = _a[1];
-            return typeof value != 'function';
-        }
+        var filter = function (data) { return typeof data[1] != 'function'; };
         if (!field) {
             setFieldsFromChildren(function (fields) { return __spreadArray(__spreadArray([], fields, true), [obj], false); });
         }
-        else if (field && !(0, utils_1.dequal)((0, utils_1.filterProperty)(field || {}, function (_a) {
-            var key = _a[0], value = _a[1];
-            return typeof value != 'function';
-        }), (0, utils_1.filterProperty)(field || {}, function (_a) {
-            var key = _a[0], value = _a[1];
-            return typeof value != 'function';
-        }))) {
+        else if (field && !(0, utils_1.dequal)((0, utils_1.filterProperty)(field || {}, filter), (0, utils_1.filterProperty)(obj || {}, filter))) {
             setFieldsFromChildren(function (fields) { return __spreadArray([], fields.map(function (e) { return e.name == obj.name ? obj : e; }), true); });
         }
         return render([obj])[0];

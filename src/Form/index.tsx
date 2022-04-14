@@ -101,13 +101,12 @@ let Form = function (props: Props, ref) {
     // -------------------------------------------- renderização flúida de um componente-----------------------
     function renderField(obj: Field){
         let field = getAllFields(fieldsFromChildren || []).find(e => e.name==obj.name)
-        function filter([key, value]){
-            return typeof value != 'function'
-        }
+        
+        const filter = data => typeof data[1] != 'function'
         
         if(!field){
             setFieldsFromChildren(fields => [...fields, obj])
-        }else if(field && !dequal(filterProperty(field || {}, ([key, value]) => typeof value != 'function'), filterProperty(field || {}, ([key, value]) => typeof value != 'function'))){
+        }else if(field && !dequal(filterProperty(field || {}, filter), filterProperty(obj || {}, filter))){
             setFieldsFromChildren(fields => [...fields.map(e => e.name==obj.name ? obj : e)])
         }
         return render([obj])[0]
