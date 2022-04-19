@@ -1,11 +1,37 @@
 import Grid from 'dynamic-react-grid';
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
 import { Create, Field, ParamsCreate, Props } from '../types';
 import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty } from '../utils';
 
-// let Form: React.ForwardRefRenderFunction<HTMLFormElement, Props & JSX.IntrinsicElements['form']> = function (props, ref) {
+function RenderField({obj, setFieldsFromChildren, wrapChildren}: {obj: Field, setFieldsFromChildren: any, wrapChildren: Function}){
+        
+    useEffect(() => {
+        return function(){
+            setFieldsFromChildren(fields => [...fields.filter(e => e.name != obj.name)])
+        }
+    }, [])
+    
+    useEffect(() => {
+        setFieldsFromChildren(fields => {
+            let field = getAllFields(fields || []).find(e => e.name==obj.name)
+    
+            const filter = data => typeof data[1] != 'function'
+            
+            if(!field){
+                return [...fields, obj]
+            }else if(field && !dequal(filterProperty(field || {}, filter), filterProperty(obj || {}, filter))){
+                return fields.map(e => e.name == obj.name ? obj : e)
+            }
+            return fields
+        })
+    }, [obj])
+
+    return obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj)
+    
+}
+
 let Form = function (props: Props, ref) {
 
     let Context = useRef<Create>({
@@ -99,18 +125,8 @@ let Form = function (props: Props, ref) {
     }
 
     // -------------------------------------------- renderização flúida de um componente-----------------------
-    function renderField(obj: Field){
-        let field = getAllFields(fieldsFromChildren || []).find(e => e.name==obj.name)
-        
-        const filter = data => typeof data[1] != 'function'
-        
-        if(!field){
-            setFieldsFromChildren(fields => [...fields, obj])
-        }else if(field && !dequal(filterProperty(field || {}, filter), filterProperty(obj || {}, filter))){
-            setFieldsFromChildren(fields => [...fields.map(e => e.name==obj.name ? obj : e)])
-        }
-        return render([obj])[0]
-    }
+   
+    const renderField = useCallback((props: Field) => <RenderField obj={props} wrapChildren={wrapChildren} setFieldsFromChildren={setFieldsFromChildren}/>, [])
 
     //---------------------------------------------- inicialização ---------------------------------------------
     let argumentsToContexts = {
@@ -138,8 +154,6 @@ let Form = function (props: Props, ref) {
         footerProps: propsContext.footerProps || localContext.footerProps,
         context: propsContext.context || localContext.context,
     }
-    
-    
     //---------------------------------------------- controle de referência -------------------------------------
 
     useImperativeHandle(

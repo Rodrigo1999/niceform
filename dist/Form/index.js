@@ -60,14 +60,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.create = void 0;
-var jsx_runtime_1 = require("react/jsx-runtime");
 var react_1 = require("react");
+var jsx_runtime_1 = require("react/jsx-runtime");
 var dynamic_react_grid_1 = __importDefault(require("dynamic-react-grid"));
 var react_2 = require("react");
 var useErrors_1 = __importDefault(require("../hooks/useErrors"));
 var useValues_1 = __importDefault(require("../hooks/useValues"));
 var utils_1 = require("../utils");
-// let Form: React.ForwardRefRenderFunction<HTMLFormElement, Props & JSX.IntrinsicElements['form']> = function (props, ref) {
+function RenderField(_a) {
+    var obj = _a.obj, setFieldsFromChildren = _a.setFieldsFromChildren, wrapChildren = _a.wrapChildren;
+    (0, react_2.useEffect)(function () {
+        return function () {
+            setFieldsFromChildren(function (fields) { return __spreadArray([], fields.filter(function (e) { return e.name != obj.name; }), true); });
+        };
+    }, []);
+    (0, react_2.useEffect)(function () {
+        setFieldsFromChildren(function (fields) {
+            var field = (0, utils_1.getAllFields)(fields || []).find(function (e) { return e.name == obj.name; });
+            var filter = function (data) { return typeof data[1] != 'function'; };
+            if (!field) {
+                return __spreadArray(__spreadArray([], fields, true), [obj], false);
+            }
+            else if (field && !(0, utils_1.dequal)((0, utils_1.filterProperty)(field || {}, filter), (0, utils_1.filterProperty)(obj || {}, filter))) {
+                return fields.map(function (e) { return e.name == obj.name ? obj : e; });
+            }
+            return fields;
+        });
+    }, [obj]);
+    return obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj);
+}
 var Form = function (props, ref) {
     var _this = this;
     var _a, _b, _c, _d, _e, _g, _h;
@@ -165,17 +186,7 @@ var Form = function (props, ref) {
         });
     }); };
     // -------------------------------------------- renderização flúida de um componente-----------------------
-    function renderField(obj) {
-        var field = (0, utils_1.getAllFields)(fieldsFromChildren || []).find(function (e) { return e.name == obj.name; });
-        var filter = function (data) { return typeof data[1] != 'function'; };
-        if (!field) {
-            setFieldsFromChildren(function (fields) { return __spreadArray(__spreadArray([], fields, true), [obj], false); });
-        }
-        else if (field && !(0, utils_1.dequal)((0, utils_1.filterProperty)(field || {}, filter), (0, utils_1.filterProperty)(obj || {}, filter))) {
-            setFieldsFromChildren(function (fields) { return __spreadArray([], fields.map(function (e) { return e.name == obj.name ? obj : e; }), true); });
-        }
-        return render([obj])[0];
-    }
+    var renderField = (0, react_2.useCallback)(function (props) { return (0, jsx_runtime_1.jsx)(RenderField, { obj: props, wrapChildren: wrapChildren, setFieldsFromChildren: setFieldsFromChildren }); }, []);
     //---------------------------------------------- inicialização ---------------------------------------------
     var argumentsToContexts = {
         props: props,
