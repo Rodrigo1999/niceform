@@ -147,3 +147,21 @@ export function filterProperty(_obj: object, filter?: Array<string> | ((value: A
   obj = Object.fromEntries(obj)
   return obj
 }
+
+//---------------------------------------------- find items by renderField in Dom element ---------------------------
+
+export function findInComponent(obj: object) {
+    const items = Array()
+    function each(obj) {
+        if (Array.isArray(obj) || obj?.constructor == ({}).constructor) {
+            for (let key in obj) {
+                if ((Array.isArray(obj[key]) || obj[key]?.constructor == (new Object).constructor)) {
+                    if (obj[key]?.isRenderField) items.push(obj[key])
+                    each(obj[key])
+                }
+            }
+        }
+    }
+    each(obj)
+    return items.map(e => e.constructorObject).filter(Boolean)
+}

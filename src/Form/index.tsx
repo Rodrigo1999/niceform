@@ -3,34 +3,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
 import { Create, Field, ParamsCreate, Props } from '../types';
-import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty } from '../utils';
-
-function RenderField({obj, setFieldsFromChildren, wrapChildren}: {obj: Field, setFieldsFromChildren: any, wrapChildren: Function}){
-        
-    useEffect(() => {
-        return function(){
-            setFieldsFromChildren(fields => [...fields.filter(e => e.name != obj.name)])
-        }
-    }, [])
-    
-    useEffect(() => {
-        setFieldsFromChildren(fields => {
-            let field = getAllFields(fields || []).find(e => e.name==obj.name)
-    
-            const filter = data => typeof data[1] != 'function'
-            
-            if(!field){
-                return [...fields, obj]
-            }else if(field && !dequal(filterProperty(field || {}, filter), filterProperty(obj || {}, filter))){
-                return fields.map(e => e.name == obj.name ? obj : e)
-            }
-            return fields
-        })
-    }, [obj])
-
-    return obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj)
-    
-}
+import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent } from '../utils';
 
 let Form = function (props: Props, ref) {
 
@@ -43,7 +16,7 @@ let Form = function (props: Props, ref) {
         footerProps: {},
         context: {}
     });
-    props = {...Context.current.context, ...props}
+    props = { ...Context.current.context, ...props }
     let lastChangedField = useRef([] as ([name: any, value: any] | []))
     let isSubmited = useRef(false)
     let form = useRef<HTMLFormElement>(null);
@@ -64,7 +37,7 @@ let Form = function (props: Props, ref) {
     });
 
     useEffect(() => {
-        if(lastChangedField.current[0] && isSubmited.current){
+        if (lastChangedField.current[0] && isSubmited.current) {
             hookErrors.verifyAllErrors(lastChangedField.current[0])
         }
     }, [hookValues.values, isSubmited])
@@ -94,7 +67,7 @@ let Form = function (props: Props, ref) {
             });
         }
     }), [fieldsFromChildren])
-    
+
     //---------------------------------------------- submição de formulário -------------------------------------
     let submit = async (evt) => {
         evt?.preventDefault?.();
@@ -102,7 +75,7 @@ let Form = function (props: Props, ref) {
         let errors = await hookErrors.verifyAllErrors()
         let cloneValues = Object.assign({}, hookValues.values);
 
-        if(fields){
+        if (fields) {
             let fd: Array<Field> = getAllFields(fields).filter(field => field.active != false);
             fd.filter(e => e.output && e.visible != false).forEach(e => {
                 if (e.name) cloneValues[e.name] = e.output!(hookValues.values[e.name]);
@@ -125,8 +98,30 @@ let Form = function (props: Props, ref) {
     }
 
     // -------------------------------------------- renderização flúida de um componente-----------------------
-   
-    const renderField = useCallback((props: Field) => <RenderField obj={props} wrapChildren={wrapChildren} setFieldsFromChildren={setFieldsFromChildren}/>, [])
+
+    function renderField(obj: Field){
+        let comp = obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj)
+        
+        comp = {...comp, constructorObject: obj, isRenderField: true }
+        return comp
+    }
+
+    const setFieldsFromChildrenDebounce = useMemo(() => debounce(function(fields, fieldsFromChildren){
+        const filter = data => typeof data[1] != 'function'
+
+        const formatFieldsToCompare = fields => fields.map(field => filterProperty(field || {}, filter))
+
+        if (!dequal(formatFieldsToCompare(fields), formatFieldsToCompare(fieldsFromChildren))) {
+
+            setFieldsFromChildren([...fields])
+        }
+
+    }, 100), [])
+
+    function connectChildren(element){
+        setFieldsFromChildrenDebounce(findInComponent(element), fieldsFromChildren)  
+        return element
+    }
 
     //---------------------------------------------- inicialização ---------------------------------------------
     let argumentsToContexts = {
@@ -157,8 +152,8 @@ let Form = function (props: Props, ref) {
     //---------------------------------------------- controle de referência -------------------------------------
 
     useImperativeHandle(
-        Object.keys(props.innerRef || ref || {}).length ? props.innerRef || ref : { current: null }, 
-        () => ({...argumentsToContexts, form: form?.current, setValues: hookValues.setValues})
+        Object.keys(props.innerRef || ref || {}).length ? props.innerRef || ref : { current: null },
+        () => ({ ...argumentsToContexts, form: form?.current, setValues: hookValues.setValues })
     );
 
     //---------------------------------------------- controle de linhas e colunas -------------------------------------
@@ -172,9 +167,13 @@ let Form = function (props: Props, ref) {
         spacing: props.spacing || 2,
     }
     function wrapChildren(f: Field) {
-        if(fields || props.children){
+        if (fields || props.children) {
             if (f.fields) return render(f.fields);
-            if (f.type == 'component' && f.content) return f.content({...argumentsToContexts, fields: fields || []});
+            if (f.type == 'component' && f.content) {
+                const comp = f.content({ ...argumentsToContexts, fields: fields || [] });
+                setFieldsFromChildrenDebounce(findInComponent(comp), fieldsFromChildren)
+                return comp
+            }
 
             let _f = filterProperty(f, ['input', 'output'])
             return (getComponentBase(Context?.current?.components, _f) || getComponentBase(Context?.current?.components, _f, 'default'))?.content?.(_f);
@@ -214,8 +213,8 @@ let Form = function (props: Props, ref) {
                         {field.afterContent}
                     </Context.current.ComponentWrap>
                 ) : field.wrap ? field.wrap(wrapChildren(field)) : wrapChildren(field)
-                    
-                
+
+
             })
         )
     }
@@ -223,7 +222,7 @@ let Form = function (props: Props, ref) {
     //---------------------------------------------- COMPONENTE -------------------------------------
     return (
         <form onSubmit={submit} ref={form}>
-            {props.children ? props.children(argumentsToContexts) : (
+            {props.children ? connectChildren(props.children(argumentsToContexts)) : (
                 <>
                     <Context.current.ComponentWrap
                         {...configRow}
@@ -237,7 +236,7 @@ let Form = function (props: Props, ref) {
                             alignItems='flex-start'
                             justify='flex-end'
                             className='content-buttons'
-                            style={{marginTop: 20}}
+                            style={{ marginTop: 20 }}
                             {...Context?.current?.footerProps}
                         >
                             {props.beforeButtonElement}
@@ -252,5 +251,5 @@ let Form = function (props: Props, ref) {
     )
 }
 
-export let create = (data: (params: ParamsCreate) => Create) => (forwardRef(Form.bind(data)) as React.ForwardRefExoticComponent<React.PropsWithoutRef<Props> & {[x:string]: any}>);
+export let create = (data: (params: ParamsCreate) => Create) => (forwardRef(Form.bind(data)) as React.ForwardRefExoticComponent<React.PropsWithoutRef<Props> & { [x: string]: any }>);
 export default Form;
