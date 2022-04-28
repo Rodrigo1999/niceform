@@ -1,4 +1,5 @@
 import React from 'react';
+import dequal from './dequal';
 import { Field, Components } from './types';
 export {default as dequal} from './dequal'
 //---------------------------------------------- serializa os valores do formulário para formData-------------------------------------
@@ -165,3 +166,6 @@ export function findInComponent(obj: object) {
     each(obj)
     return items.map(e => e.constructorObject).filter(Boolean)
 }
+
+//---------------------------------------------- useReducersHook and evit re render ---------------------------
+export * from './useContextSelector'

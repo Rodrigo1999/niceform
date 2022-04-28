@@ -1,9 +1,9 @@
 import Grid from 'dynamic-react-grid';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
 import { Create, Field, ParamsCreate, Props } from '../types';
-import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent } from '../utils';
+import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent, Context as ContextForm } from '../utils';
 
 let Form = function (props: Props, ref) {
 
@@ -20,17 +20,17 @@ let Form = function (props: Props, ref) {
     let lastChangedField = useRef([] as ([name: any, value: any] | []))
     let isSubmited = useRef(false)
     let form = useRef<HTMLFormElement>(null);
-    let [fieldsFromChildren, setFieldsFromChildren] = useState<Array<Field>>([]);
+    let [fieldsFromRender, setFieldsFromRender] = useState<Array<Field>>([]);
 
     let fields = props.fields?.concat?.(props.staticFields || [])
 
     let hookValues = useValues({
-        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []),
+        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []),
         initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
 
     let hookErrors = useErrors({
-        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []).filter(e => e.active != false),
+        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []).filter(e => e.active != false),
         values: hookValues.valuesChain,
         errorsControl: Context?.current?.errorsControl,
         yupSchema: props.validationSchema
@@ -66,7 +66,7 @@ let Form = function (props: Props, ref) {
                 props.onChangeField?.(field || fd, value, others)
             });
         }
-    }), [fieldsFromChildren])
+    }), [fieldsFromRender, props?.fields])
 
     //---------------------------------------------- submição de formulário -------------------------------------
     let submit = async (evt) => {
@@ -106,20 +106,20 @@ let Form = function (props: Props, ref) {
         return comp
     }
 
-    const setFieldsFromChildrenDebounce = useMemo(() => debounce(function(fields, fieldsFromChildren){
+    const setFieldsFromRenderDebounce = useMemo(() => debounce(function(fields, fieldsFromRender){
         const filter = data => typeof data[1] != 'function'
 
         const formatFieldsToCompare = fields => fields.map(field => filterProperty(field || {}, filter))
 
-        if (!dequal(formatFieldsToCompare(fields), formatFieldsToCompare(fieldsFromChildren))) {
+        if (!dequal(formatFieldsToCompare(fields), formatFieldsToCompare(fieldsFromRender))) {
 
-            setFieldsFromChildren([...fields])
+            setFieldsFromRender([...fields])
         }
 
     }, 100), [])
 
     function connectChildren(element){
-        setFieldsFromChildrenDebounce(findInComponent(element), fieldsFromChildren)  
+        setFieldsFromRenderDebounce(findInComponent(element), fieldsFromRender)  
         return element
     }
 
@@ -133,7 +133,7 @@ let Form = function (props: Props, ref) {
         changeValue: actions.changeValue,
         submit,
         clean: actions.clean,
-        allFields: fields ? getAllFields(fields) : [],
+        allFields: (fields ? getAllFields(fields) : []).concat(fieldsFromRender),
         renderField
     }
 
@@ -171,7 +171,7 @@ let Form = function (props: Props, ref) {
             if (f.fields) return render(f.fields);
             if (f.type == 'component' && f.content) {
                 const comp = f.content({ ...argumentsToContexts, fields: fields || [] });
-                setFieldsFromChildrenDebounce(findInComponent(comp), fieldsFromChildren)
+                setFieldsFromRenderDebounce(findInComponent(comp), fieldsFromRender)
                 return comp
             }
 
@@ -219,35 +219,38 @@ let Form = function (props: Props, ref) {
         )
     }
 
+    
     //---------------------------------------------- COMPONENTE -------------------------------------
     return (
-        <form onSubmit={submit} ref={form}>
-            {props.children ? connectChildren(props.children(argumentsToContexts)) : (
-                <>
-                    <Context.current.ComponentWrap
-                        {...configRow}
-                        {...props.grid?.row}
-                    >
-                        {render(fields)}
-                    </Context.current.ComponentWrap>
-                    {!props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
+        <ContextForm.Provider value={argumentsToContexts}>
+            <form onSubmit={submit} ref={form}>
+                {props.children ? connectChildren(props.children(argumentsToContexts)) : (
+                    <>
                         <Context.current.ComponentWrap
-                            row
-                            alignItems='flex-start'
-                            justify='flex-end'
-                            className='content-buttons'
-                            style={{ marginTop: 20 }}
-                            {...Context?.current?.footerProps}
+                            {...configRow}
+                            {...props.grid?.row}
                         >
-                            {props.beforeButtonElement}
-                            {props.onSubmit && Context?.current?.button}
-                            {props.afterButtonElement}
+                            {render(fields)}
                         </Context.current.ComponentWrap>
+                        {!props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
+                            <Context.current.ComponentWrap
+                                row
+                                alignItems='flex-start'
+                                justify='flex-end'
+                                className='content-buttons'
+                                style={{ marginTop: 20 }}
+                                {...Context?.current?.footerProps}
+                            >
+                                {props.beforeButtonElement}
+                                {props.onSubmit && Context?.current?.button}
+                                {props.afterButtonElement}
+                            </Context.current.ComponentWrap>
 
-                    }
-                </>
-            )}
-        </form>
+                        }
+                    </>
+                )}
+            </form>
+        </ContextForm.Provider>
     )
 }
 

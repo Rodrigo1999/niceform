@@ -49,32 +49,30 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
 var utils_1 = require("../utils");
-function callbackGetAllFields(fields, values) {
-    var _fields = fields || [];
-    if (!fields) {
-        _fields = Object.entries(values || {}).map(function (e) { return ({ name: e[0] }); });
-    }
-    return (0, utils_1.getAllFields)(_fields);
-}
 function useErrors(_a) {
     var _this = this;
     var fields = _a.fields, errorsControl = _a.errorsControl, yupSchema = _a.yupSchema, values = _a.values;
     var _b = (0, react_1.useState)({}), errors = _b[0], setErrors = _b[1];
-    var allFields = (0, react_1.useMemo)(function () { return callbackGetAllFields(fields, values); }, [fields, values]);
+    var allFields = (0, react_1.useMemo)(function () {
+        var _fields = fields || [];
+        if (!fields) {
+            _fields = Object.entries(values || {}).map(function (e) { return ({ name: e[0] }); });
+        }
+        return (0, utils_1.getAllFields)(_fields);
+    }, [fields, values]);
     //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
     var verifyErrors = function (field) { return __awaiter(_this, void 0, void 0, function () {
-        var errors, _loop_1, index, value_1, err;
+        var errors, _loop_1, _i, errorsControl_1, functionReturnPersonError, value_1, err;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     errors = {};
                     if (!errorsControl) return [3 /*break*/, 4];
-                    _loop_1 = function (index) {
-                        var functionReturnPersonError, value_2, err;
+                    _loop_1 = function (functionReturnPersonError) {
+                        var value_2, err;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    functionReturnPersonError = errorsControl[index];
                                     if (!field.name) return [3 /*break*/, 2];
                                     value_2 = values[field.name];
                                     return [4 /*yield*/, functionReturnPersonError({ field: field, value: value_2, validateSchema: function (schema) { return (0, utils_1.validateSchemaOnlyField)(schema, value_2 || ''); } })];
@@ -87,16 +85,17 @@ function useErrors(_a) {
                             }
                         });
                     };
-                    index = 0;
+                    _i = 0, errorsControl_1 = errorsControl;
                     _a.label = 1;
                 case 1:
-                    if (!(index < errorsControl.length)) return [3 /*break*/, 4];
-                    return [5 /*yield**/, _loop_1(index)];
+                    if (!(_i < errorsControl_1.length)) return [3 /*break*/, 4];
+                    functionReturnPersonError = errorsControl_1[_i];
+                    return [5 /*yield**/, _loop_1(functionReturnPersonError)];
                 case 2:
                     _a.sent();
                     _a.label = 3;
                 case 3:
-                    index++;
+                    _i++;
                     return [3 /*break*/, 1];
                 case 4:
                     if (!field.error) return [3 /*break*/, 6];
@@ -119,7 +118,7 @@ function useErrors(_a) {
     }); };
     //---------------------------------------------- salva no estado e retorna os erros encontrados para todos os campos -------------------------------------
     var verifyAllErrors = function (name) { return __awaiter(_this, void 0, void 0, function () {
-        var fd, errors, errorYup, index, field, errorThisField, errorsResult;
+        var fd, errors, errorYup, _i, fd_1, field, errorThisField, errorsResult;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -137,11 +136,11 @@ function useErrors(_a) {
                     errorYup = _a.sent();
                     _a.label = 2;
                 case 2:
-                    index = 0;
+                    _i = 0, fd_1 = fd;
                     _a.label = 3;
                 case 3:
-                    if (!(index < fd.length)) return [3 /*break*/, 6];
-                    field = fd[index];
+                    if (!(_i < fd_1.length)) return [3 /*break*/, 6];
+                    field = fd_1[_i];
                     if (!field.name)
                         return [3 /*break*/, 5];
                     return [4 /*yield*/, verifyErrors(field)];
@@ -150,7 +149,7 @@ function useErrors(_a) {
                     errors = __assign(__assign({}, errors), errorThisField);
                     _a.label = 5;
                 case 5:
-                    index++;
+                    _i++;
                     return [3 /*break*/, 3];
                 case 6:
                     errorsResult = __assign(__assign({}, errorYup), errors);

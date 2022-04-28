@@ -83,14 +83,14 @@ var Form = function (props, ref) {
     var lastChangedField = (0, react_2.useRef)([]);
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
-    var _j = (0, react_2.useState)([]), fieldsFromChildren = _j[0], setFieldsFromChildren = _j[1];
+    var _j = (0, react_2.useState)([]), fieldsFromRender = _j[0], setFieldsFromRender = _j[1];
     var fields = (_b = (_a = props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, props.staticFields || []);
     var hookValues = (0, useValues_1.default)({
-        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []),
+        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []),
         initialValues: (0, react_2.useMemo)(function () { return Object.assign({}, props.initialValues, props.fixedValues); }, [props.initialValues, props.fixedValues])
     });
     var hookErrors = (0, useErrors_1.default)({
-        fields: (fields || []).concat(fieldsFromChildren.length ? fieldsFromChildren : []).filter(function (e) { return e.active != false; }),
+        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []).filter(function (e) { return e.active != false; }),
         values: hookValues.valuesChain,
         errorsControl: (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.errorsControl,
         yupSchema: props.validationSchema
@@ -124,7 +124,7 @@ var Form = function (props, ref) {
                 (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
             });
         }
-    }); }, [fieldsFromChildren]);
+    }); }, [fieldsFromRender, props === null || props === void 0 ? void 0 : props.fields]);
     //---------------------------------------------- submição de formulário -------------------------------------
     var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
         var errors, cloneValues, fd;
@@ -169,15 +169,15 @@ var Form = function (props, ref) {
         comp = __assign(__assign({}, comp), { constructorObject: obj, isRenderField: true });
         return comp;
     }
-    var setFieldsFromChildrenDebounce = (0, react_2.useMemo)(function () { return (0, utils_1.debounce)(function (fields, fieldsFromChildren) {
+    var setFieldsFromRenderDebounce = (0, react_2.useMemo)(function () { return (0, utils_1.debounce)(function (fields, fieldsFromRender) {
         var filter = function (data) { return typeof data[1] != 'function'; };
         var formatFieldsToCompare = function (fields) { return fields.map(function (field) { return (0, utils_1.filterProperty)(field || {}, filter); }); };
-        if (!(0, utils_1.dequal)(formatFieldsToCompare(fields), formatFieldsToCompare(fieldsFromChildren))) {
-            setFieldsFromChildren(__spreadArray([], fields, true));
+        if (!(0, utils_1.dequal)(formatFieldsToCompare(fields), formatFieldsToCompare(fieldsFromRender))) {
+            setFieldsFromRender(__spreadArray([], fields, true));
         }
     }, 100); }, []);
     function connectChildren(element) {
-        setFieldsFromChildrenDebounce((0, utils_1.findInComponent)(element), fieldsFromChildren);
+        setFieldsFromRenderDebounce((0, utils_1.findInComponent)(element), fieldsFromRender);
         return element;
     }
     //---------------------------------------------- inicialização ---------------------------------------------
@@ -190,7 +190,7 @@ var Form = function (props, ref) {
         changeValue: actions.changeValue,
         submit: submit,
         clean: actions.clean,
-        allFields: fields ? (0, utils_1.getAllFields)(fields) : [],
+        allFields: (fields ? (0, utils_1.getAllFields)(fields) : []).concat(fieldsFromRender),
         renderField: renderField
     };
     var localContext = (this === null || this === void 0 ? void 0 : this(argumentsToContexts)) || {};
@@ -222,7 +222,7 @@ var Form = function (props, ref) {
                 return render(f.fields);
             if (f.type == 'component' && f.content) {
                 var comp = f.content(__assign(__assign({}, argumentsToContexts), { fields: fields || [] }));
-                setFieldsFromChildrenDebounce((0, utils_1.findInComponent)(comp), fieldsFromChildren);
+                setFieldsFromRenderDebounce((0, utils_1.findInComponent)(comp), fieldsFromRender);
                 return comp;
             }
             var _f = (0, utils_1.filterProperty)(f, ['input', 'output']);
@@ -240,8 +240,8 @@ var Form = function (props, ref) {
         }));
     };
     //---------------------------------------------- COMPONENTE -------------------------------------
-    return ((0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_e = props.grid) === null || _e === void 0 ? void 0 : _e.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
-                    (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, (_g = Context === null || Context === void 0 ? void 0 : Context.current) === null || _g === void 0 ? void 0 : _g.footerProps, { children: [props.beforeButtonElement, props.onSubmit && ((_h = Context === null || Context === void 0 ? void 0 : Context.current) === null || _h === void 0 ? void 0 : _h.button), props.afterButtonElement] }))] })) })));
+    return ((0, jsx_runtime_1.jsx)(utils_1.Context.Provider, __assign({ value: argumentsToContexts }, { children: (0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_e = props.grid) === null || _e === void 0 ? void 0 : _e.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
+                        (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, (_g = Context === null || Context === void 0 ? void 0 : Context.current) === null || _g === void 0 ? void 0 : _g.footerProps, { children: [props.beforeButtonElement, props.onSubmit && ((_h = Context === null || Context === void 0 ? void 0 : Context.current) === null || _h === void 0 ? void 0 : _h.button), props.afterButtonElement] }))] })) })) })));
 };
 var create = function (data) { return (0, react_2.forwardRef)(Form.bind(data)); };
 exports.create = create;

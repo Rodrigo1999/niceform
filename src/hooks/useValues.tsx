@@ -3,16 +3,15 @@ import { Field, ValueKeys } from '../types';
 import { ReturnUseValuesFunction, UseValuesFunctionParams } from '../types/hooks';
 import { getAllFields, resolveInitialValue, resolveValue, getValuesByKeyRange } from '../utils';
 
-function callbackGetAllFields(fields, initialValues){
-    let _fields = fields || [];
-    if(!fields) {
-        _fields = Object.entries(initialValues || {}).map(e => ({name: e[0]}))
-    }
-    return getAllFields(_fields)
-}
 export default function useValues({fields, initialValues}: UseValuesFunctionParams<Field>) : ReturnUseValuesFunction<Field>{
     let [values, setValues] = useState({});
-    let allFields: Array<Field> = useMemo(() => callbackGetAllFields(fields, initialValues), [fields, initialValues])
+    let allFields: Array<Field> = useMemo(() => {
+        let _fields = fields || [];
+        if(!fields) {
+            _fields = Object.entries(initialValues || {}).map(e => ({name: e[0]}))
+        }
+        return getAllFields(_fields)
+    }, [fields, initialValues])
     //---------------------------------------------- seta o valor inicial do formulário -------------------------------------
     let setInitialValues = () => {
 		let fieldsActives =  allFields.filter(e => e.active != false);
@@ -41,13 +40,13 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
             setValues((values: ValueKeys) => {
                 if(fd?.dependence){
                     let dependence = fd.dependence?.split?.('-');
-                    allFields.forEach(e => {
+                    for(let e of allFields){
                         if(!e.dependence) return false;
                         let thisDependence = e.dependence.split('-');
                         if(dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])){
                             if(e.name) resolveValue(values, e.name, undefined, true)
                         }
-                    });
+                    }
                 }
                 resolveValue(values, name, val);
                 return {...values}
@@ -61,8 +60,7 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
     let cleanValues = () => {
         let fd = allFields.filter(e => e.active != false);
         setValues(values => {
-            for (let index = 0; index < fd.length; index++) {
-                const element = fd[index];
+            for(let element of fd){
                 if(element.name) resolveValue(values, element.name, undefined, true)
             }
             return {...values}

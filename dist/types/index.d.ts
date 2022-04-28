@@ -374,6 +374,22 @@ export interface FieldLite extends Breakpoints {
         value: any;
         validateSchema: (shcema: any) => Promise<any>;
     }) => string | undefined | void | Promise<string | undefined | void>;
+    /**
+     * Specifies whether debounce in this field will be active. Note: (you must use the 'enableDebounce' hook together)
+     * @example
+     * <Form
+     *      enableDebounce={false}
+     *  />
+     */
+    enableDebounce?: boolean;
+    /**
+     * Specifies the debounce delay time for this field. Note: (you must use the 'enableDebounce' hook together)
+     * @example
+     * <Form
+     *      timeDebounce={200}
+     *  />
+     */
+    timeDebounce?: number;
 }
 export declare type Field = FieldLite & Breakpoints & ValueKeys;
 export interface Create {
@@ -784,5 +800,21 @@ export interface Props extends Row {
         </Form>
      */
     children?: (params: ParamsCreate) => any;
+    /**
+     * Specifies whether debounce on fields will be active. Note: (you must use the 'enableDebounce' hook together)
+     * @example
+     * <Form
+     *      enableDebounce={false}
+     *  />
+     */
+    enableDebounce?: boolean;
+    /**
+     * Specifies the debounce delay time. Note: (you must use the 'enableDebounce' hook together)
+     * @example
+     * <Form
+     *      timeDebounce={200}
+     *  />
+     */
+    timeDebounce?: number;
 }
 export {};

@@ -3,26 +3,23 @@ import { Field } from '../types';
 import { ReturnUseErrorsFunctionParams, useErrorsFunctionParams } from '../types/hooks';
 import { errorSchema, getAllFields, validateSchemaOnlyField } from '../utils';
 
-function callbackGetAllFields(fields, values){
-    let _fields = fields || [];
-    if(!fields) {
-        _fields = Object.entries(values || {}).map(e => ({name: e[0]}))
-    }
-    return getAllFields(_fields)
-}
-
 export default function useErrors({fields, errorsControl, yupSchema, values}: useErrorsFunctionParams<Field>): ReturnUseErrorsFunctionParams{
     let [errors, setErrors] = useState({});
     
-    let allFields: Array<Field> = useMemo(() => callbackGetAllFields(fields, values), [fields, values])
+    let allFields: Array<Field> = useMemo(() => {
+        let _fields = fields || [];
+        if(!fields) {
+            _fields = Object.entries(values || {}).map(e => ({name: e[0]}))
+        }
+        return getAllFields(_fields)
+    }, [fields, values])
     //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
     let verifyErrors = async (field) => {
         let errors = {};
 
         if(errorsControl){
-            for (let index = 0; index < errorsControl.length; index++) {
-                const functionReturnPersonError = errorsControl[index];
-                
+
+            for (let functionReturnPersonError of errorsControl) {
                 if(field.name){
                     let value = values[field.name]
                    
@@ -60,8 +57,7 @@ export default function useErrors({fields, errorsControl, yupSchema, values}: us
             errorYup = await errorSchema(yupSchema, fd, values, !fields, !!name)
         }
         
-        for (let index = 0; index < fd.length; index++) {
-            const field = fd[index];
+        for (let field of fd) {
             if(!field.name) continue
             
             let errorThisField = await verifyErrors(field)

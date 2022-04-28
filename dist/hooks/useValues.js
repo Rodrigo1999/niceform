@@ -13,17 +13,16 @@ var __assign = (this && this.__assign) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
 var utils_1 = require("../utils");
-function callbackGetAllFields(fields, initialValues) {
-    var _fields = fields || [];
-    if (!fields) {
-        _fields = Object.entries(initialValues || {}).map(function (e) { return ({ name: e[0] }); });
-    }
-    return (0, utils_1.getAllFields)(_fields);
-}
 function useValues(_a) {
     var fields = _a.fields, initialValues = _a.initialValues;
     var _b = (0, react_1.useState)({}), values = _b[0], setValues = _b[1];
-    var allFields = (0, react_1.useMemo)(function () { return callbackGetAllFields(fields, initialValues); }, [fields, initialValues]);
+    var allFields = (0, react_1.useMemo)(function () {
+        var _fields = fields || [];
+        if (!fields) {
+            _fields = Object.entries(initialValues || {}).map(function (e) { return ({ name: e[0] }); });
+        }
+        return (0, utils_1.getAllFields)(_fields);
+    }, [fields, initialValues]);
     //---------------------------------------------- seta o valor inicial do formulário -------------------------------------
     var setInitialValues = function () {
         var fieldsActives = allFields.filter(function (e) { return e.active != false; });
@@ -46,16 +45,17 @@ function useValues(_a) {
             setValues(function (values) {
                 var _a, _b;
                 if (fd === null || fd === void 0 ? void 0 : fd.dependence) {
-                    var dependence_1 = (_b = (_a = fd.dependence) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '-');
-                    allFields.forEach(function (e) {
+                    var dependence = (_b = (_a = fd.dependence) === null || _a === void 0 ? void 0 : _a.split) === null || _b === void 0 ? void 0 : _b.call(_a, '-');
+                    for (var _i = 0, allFields_1 = allFields; _i < allFields_1.length; _i++) {
+                        var e = allFields_1[_i];
                         if (!e.dependence)
                             return false;
                         var thisDependence = e.dependence.split('-');
-                        if (dependence_1[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence_1[1])) {
+                        if (dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])) {
                             if (e.name)
                                 (0, utils_1.resolveValue)(values, e.name, undefined, true);
                         }
-                    });
+                    }
                 }
                 (0, utils_1.resolveValue)(values, name, val);
                 return __assign({}, values);
@@ -67,8 +67,8 @@ function useValues(_a) {
     var cleanValues = function () {
         var fd = allFields.filter(function (e) { return e.active != false; });
         setValues(function (values) {
-            for (var index = 0; index < fd.length; index++) {
-                var element = fd[index];
+            for (var _i = 0, fd_1 = fd; _i < fd_1.length; _i++) {
+                var element = fd_1[_i];
                 if (element.name)
                     (0, utils_1.resolveValue)(values, element.name, undefined, true);
             }
