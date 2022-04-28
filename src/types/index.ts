@@ -376,7 +376,7 @@ export interface FieldLite extends Breakpoints {
     }) => string | undefined | void | Promise<string | undefined | void>,
     
     /**
-     * Specifies whether debounce in this field will be active. Note: (you must use the 'enableDebounce' hook together)
+     * Specifies whether debounce in this field will be active. Note: (you must use the 'useDebounce' hook together)
      * @example
      * <Form
      *      enableDebounce={false}
@@ -384,7 +384,7 @@ export interface FieldLite extends Breakpoints {
      */
      enableDebounce?: boolean,
      /**
-      * Specifies the debounce delay time for this field. Note: (you must use the 'enableDebounce' hook together)
+      * Specifies the debounce delay time for this field. Note: (you must use the 'useDebounce' hook together)
       * @example
       * <Form
       *      timeDebounce={200}
@@ -799,7 +799,7 @@ export interface Props extends Row {
      */
     children?: (params: ParamsCreate) => any,
     /**
-     * Specifies whether debounce on fields will be active. Note: (you must use the 'enableDebounce' hook together)
+     * Specifies whether debounce on fields will be actives. Note: (you must use the 'useDebounce' hook together)
      * @example
      * <Form
      *      enableDebounce={false}
@@ -807,7 +807,7 @@ export interface Props extends Row {
      */
     enableDebounce?: boolean,
     /**
-     * Specifies the debounce delay time. Note: (you must use the 'enableDebounce' hook together)
+     * Specifies the debounce delay time. Note: (you must use the 'useDebounce' hook together)
      * @example
      * <Form
      *      timeDebounce={200}
