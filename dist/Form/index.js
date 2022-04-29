@@ -127,18 +127,18 @@ var Form = function (props, ref) {
             });
         },
         changeValue: function (evt, value, others) {
+            var _name = '';
+            var _value;
+            if (typeof evt == 'string') {
+                _name = evt;
+                _value = value;
+            }
+            else {
+                _name = evt.target.name;
+                _value = evt.target.value;
+            }
             changeValue_data(function (_a) {
                 var fieldsFromRender = _a.fieldsFromRender, fields = _a.fields, hookValues = _a.hookValues;
-                var _name = '';
-                var _value;
-                if (typeof evt == 'string') {
-                    _name = evt;
-                    _value = value;
-                }
-                else {
-                    _name = evt.target.name;
-                    _value = evt.target.value;
-                }
                 var fd = (0, utils_1.getField)((fields || []).concat(fieldsFromRender), _name, false);
                 hookValues.changeValue(_name, _value, function (field, value) {
                     var _a;

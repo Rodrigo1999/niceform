@@ -66,17 +66,18 @@ let Form = function (props: Props, ref) {
             })
         },
         changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) {
-            changeValue_data(({fieldsFromRender, fields, hookValues}) => {
-                let _name = '';
-                let _value: any;
-                if (typeof evt == 'string') {
-                    _name = evt;
-                    _value = value
-                } else {
-                    _name = evt.target.name;
-                    _value = evt.target.value
-                }
+            let _name = '';
+            let _value: any;
+            if (typeof evt == 'string') {
+                _name = evt;
+                _value = value
+            } else {
+                _name = evt.target.name;
+                _value = evt.target.value
+            }
 
+            changeValue_data(({fieldsFromRender, fields, hookValues}) => {
+                
                 const fd = getField((fields || []).concat(fieldsFromRender), _name, false)
 
                 hookValues.changeValue(_name, _value, function (field, value) {
