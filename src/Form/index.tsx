@@ -4,7 +4,7 @@ import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
 import useData from '../hooks/useData';
 import { Create, Field, ParamsCreate, Props } from '../types';
-import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent, Context as ContextForm, clone } from '../utils';
+import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent, Context as ContextForm, clone, getField } from '../utils';
 
 let Form = function (props: Props, ref) {
 
@@ -29,8 +29,6 @@ let Form = function (props: Props, ref) {
         fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []),
         initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
-
-    
 
     const hookErrors = useErrors({
         fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []).filter(e => e.active != false),
@@ -79,7 +77,7 @@ let Form = function (props: Props, ref) {
                     _value = evt.target.value
                 }
 
-                const fd = getAllFields(fields || []).concat(fieldsFromRender).find(e => e.name == _name && e.active === false)
+                const fd = getField((fields || []).concat(fieldsFromRender), _name, false)
 
                 hookValues.changeValue(_name, _value, function (field, value) {
                     lastChangedField.current = [_name, _value]
@@ -108,9 +106,9 @@ let Form = function (props: Props, ref) {
             Context?.current?.onError?.(errors);
             return false;
         } else {
-            if (props.formData) {
-                cloneValues = objectToForm(cloneValues);
-            }
+            
+            if (props.formData) cloneValues = objectToForm(cloneValues);
+
             props.onSubmit?.(cloneValues);
             if (props.clean) actions.clean()
 
@@ -123,7 +121,19 @@ let Form = function (props: Props, ref) {
     function renderField(obj: Field){
         let comp = obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj)
         
-        comp = {...comp, constructorObject: obj, isRenderField: true }
+        comp = {...comp }
+
+        Object.defineProperty(comp, 'constructorObject', {
+            enumerable: false,
+            configurable: true,
+            value: obj
+        })
+        Object.defineProperty(comp, 'isRenderField', {
+            enumerable: false,
+            configurable: true,
+            value: true
+        })
+        
         return comp
     }
 
@@ -239,7 +249,6 @@ let Form = function (props: Props, ref) {
             })
         )
     }
-
     
     //---------------------------------------------- COMPONENTE -------------------------------------
     return (

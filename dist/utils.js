@@ -62,11 +62,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clone = exports.findInComponent = exports.filterProperty = exports.getComponentBase = exports.validateSchemaOnlyField = exports.errorSchema = exports._try = exports.resolveInitialValue = exports.getValuesByKeyRange = exports.resolveValue = exports.getField = exports.getAllFields = exports.debounce = exports.objectToForm = exports.dequal = void 0;
+exports.clone = exports.findInComponent = exports.filterProperty = exports.getComponentBase = exports.validateSchemaOnlyField = exports.errorSchema = exports.resolveInitialValue = exports.getValuesByKeyRange = exports.resolveValue = exports.getField = exports.getAllFields = exports.debounce = exports.objectToForm = exports.dequal = void 0;
 var dequal_1 = require("./dequal");
 Object.defineProperty(exports, "dequal", { enumerable: true, get: function () { return __importDefault(dequal_1).default; } });
 //---------------------------------------------- useReducersHook and evit re render ---------------------------
 __exportStar(require("./useContextSelector"), exports);
+//---------------------------------------------- utils local ---------------------------
+function _try(promisse) {
+    return promisse.then(function (result) { return [null, result]; }).catch(function (error) { return [error]; });
+}
 //---------------------------------------------- serializa os valores do formulário para formData-------------------------------------
 function objectToForm(obj, form, level) {
     var f = form || new FormData();
@@ -110,13 +114,12 @@ function getAllFields(fields) {
     return fields.flatMap(function (field) { return field.fields ? getAllFields(field.fields) : field; });
 }
 exports.getAllFields = getAllFields;
-//---------------------------------------------- retorna todos um campo específico ---------------------------
+//---------------------------------------------- retorna um campo específico ---------------------------
 function getField(fields, name, active) {
     var allFields = getAllFields(fields);
-    var field = allFields;
-    if (active)
-        field = field.filter(function (e) { return e.active != false; });
-    return field.find(function (e) { return e.name == name; });
+    if (active !== undefined)
+        allFields = allFields.filter(function (e) { return e.active != active; });
+    return allFields.find(function (e) { return e.name == name; });
 }
 exports.getField = getField;
 //---------------------------------------------- retorna ou insere um valor a partir de uma cadeia de objetos ---------------------------
@@ -175,11 +178,6 @@ function resolveInitialValue(values, valuesCloned) {
     });
 }
 exports.resolveInitialValue = resolveInitialValue;
-//---------------------------------------------- Tratativa melhor de erros ---------------------------
-function _try(promisse) {
-    return promisse.then(function (result) { return [null, result]; }).catch(function (error) { return [error]; });
-}
-exports._try = _try;
 //---------------------------------------------- tratativa do schema com yup ---------------------------
 function errorSchema(schema, fields, values, basic, omit) {
     return __awaiter(this, void 0, void 0, function () {

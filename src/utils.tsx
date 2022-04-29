@@ -4,6 +4,11 @@ import { Field, Components } from './types';
 export {default as dequal} from './dequal'
 //---------------------------------------------- useReducersHook and evit re render ---------------------------
 export * from './useContextSelector'
+
+//---------------------------------------------- utils local ---------------------------
+function _try(promisse): Promise<[error: any, result: any]> {
+    return promisse.then(result => [null, result]).catch(error => [error])
+}
 //---------------------------------------------- serializa os valores do formulário para formData-------------------------------------
 export function objectToForm(obj: Object, form?: any, level?: any) {
     let f = form || new FormData();
@@ -41,12 +46,11 @@ export function debounce(fn, ms) {
 export function getAllFields(fields: Array<Field>): Array<Field> {
     return fields.flatMap((field) => field.fields ? getAllFields(field.fields) : field);
 }
-//---------------------------------------------- retorna todos um campo específico ---------------------------
+//---------------------------------------------- retorna um campo específico ---------------------------
 export function getField(fields: Array<Field>, name: string, active: Boolean): Field | undefined {
     let allFields = getAllFields(fields);
-    let field = allFields;
-    if (active) field = field.filter(e => e.active != false);
-    return field.find(e => e.name == name);
+    if (active !== undefined) allFields = allFields.filter(e => e.active != active);
+    return allFields.find(e => e.name == name);
 }
 //---------------------------------------------- retorna ou insere um valor a partir de uma cadeia de objetos ---------------------------
 export function resolveValue(obj: Object, prop: String, val?: any, valueIsUndefined?: Boolean) {
@@ -96,10 +100,7 @@ export function resolveInitialValue(values: Object, valuesCloned: Object) {
         }
     });
 }
-//---------------------------------------------- Tratativa melhor de erros ---------------------------
-export function _try(promisse): Promise<[error: any, result: any]> {
-    return promisse.then(result => [null, result]).catch(error => [error])
-}
+
 //---------------------------------------------- tratativa do schema com yup ---------------------------
 export async function errorSchema(schema: any, fields: Array<Field>, values: Object, basic?: Boolean, omit?: Boolean): Promise<Array<Object> | undefined> {
     let omitSchema: Array<String> = [];

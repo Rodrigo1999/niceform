@@ -139,7 +139,7 @@ var Form = function (props, ref) {
                     _name = evt.target.name;
                     _value = evt.target.value;
                 }
-                var fd = (0, utils_1.getAllFields)(fields || []).concat(fieldsFromRender).find(function (e) { return e.name == _name && e.active === false; });
+                var fd = (0, utils_1.getField)((fields || []).concat(fieldsFromRender), _name, false);
                 hookValues.changeValue(_name, _value, function (field, value) {
                     var _a;
                     lastChangedField.current = [_name, _value];
@@ -174,9 +174,8 @@ var Form = function (props, ref) {
                         return [2 /*return*/, false];
                     }
                     else {
-                        if (props.formData) {
+                        if (props.formData)
                             cloneValues = (0, utils_1.objectToForm)(cloneValues);
-                        }
                         (_e = props.onSubmit) === null || _e === void 0 ? void 0 : _e.call(props, cloneValues);
                         if (props.clean)
                             actions.clean();
@@ -189,7 +188,17 @@ var Form = function (props, ref) {
     // -------------------------------------------- renderização flúida de um componente-----------------------
     function renderField(obj) {
         var comp = obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj);
-        comp = __assign(__assign({}, comp), { constructorObject: obj, isRenderField: true });
+        comp = __assign({}, comp);
+        Object.defineProperty(comp, 'constructorObject', {
+            enumerable: false,
+            configurable: true,
+            value: obj
+        });
+        Object.defineProperty(comp, 'isRenderField', {
+            enumerable: false,
+            configurable: true,
+            value: true
+        });
         return comp;
     }
     var setFieldsFromRenderDebounce = (0, react_2.useMemo)(function () { return (0, utils_1.debounce)(function (fields, fieldsFromRender) {
