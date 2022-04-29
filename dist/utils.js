@@ -264,11 +264,11 @@ function findInComponent(obj) {
         var _a, _b;
         if (Array.isArray(obj) || (obj === null || obj === void 0 ? void 0 : obj.constructor) == ({}).constructor) {
             for (var key in obj) {
-                if ((Array.isArray(obj[key]) || ((_a = obj[key]) === null || _a === void 0 ? void 0 : _a.constructor) == (new Object).constructor)) {
-                    if ((_b = obj[key]) === null || _b === void 0 ? void 0 : _b.isRenderField)
-                        items.push(obj[key]);
-                    each(obj[key]);
-                }
+                if (!(Array.isArray(obj[key]) || ((_a = obj[key]) === null || _a === void 0 ? void 0 : _a.constructor) == (new Object).constructor))
+                    continue;
+                if ((_b = obj[key]) === null || _b === void 0 ? void 0 : _b.isRenderField)
+                    items.push(obj[key]);
+                each(obj[key]);
             }
         }
     }

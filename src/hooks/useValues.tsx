@@ -41,7 +41,8 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
                 if(fd?.dependence){
                     let dependence = fd.dependence?.split?.('-');
                     for(let e of allFields){
-                        if(!e.dependence) return false;
+                        if(!e.dependence) continue
+                        
                         let thisDependence = e.dependence.split('-');
                         if(dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])){
                             if(e.name) resolveValue(values, e.name, undefined, true)

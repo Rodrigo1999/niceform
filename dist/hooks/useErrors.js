@@ -69,19 +69,19 @@ function useErrors(_a) {
                     errors = {};
                     if (!errorsControl) return [3 /*break*/, 4];
                     _loop_1 = function (functionReturnPersonError) {
-                        var value_2, err;
+                        var value, err;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0:
-                                    if (!field.name) return [3 /*break*/, 2];
-                                    value_2 = values[field.name];
-                                    return [4 /*yield*/, functionReturnPersonError({ field: field, value: value_2, validateSchema: function (schema) { return (0, utils_1.validateSchemaOnlyField)(schema, value_2 || ''); } })];
+                                    if (!field.name)
+                                        return [2 /*return*/, "continue"];
+                                    value = values[field.name];
+                                    return [4 /*yield*/, functionReturnPersonError({ field: field, value: value, validateSchema: function (schema) { return (0, utils_1.validateSchemaOnlyField)(schema, value || ''); } })];
                                 case 1:
                                     err = _b.sent();
                                     if (err)
                                         errors[field.name] = err;
-                                    _b.label = 2;
-                                case 2: return [2 /*return*/];
+                                    return [2 /*return*/];
                             }
                         });
                     };

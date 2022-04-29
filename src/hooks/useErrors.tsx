@@ -20,12 +20,12 @@ export default function useErrors({fields, errorsControl, yupSchema, values}: us
         if(errorsControl){
 
             for (let functionReturnPersonError of errorsControl) {
-                if(field.name){
-                    let value = values[field.name]
-                   
-                    let err = await functionReturnPersonError({field, value, validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')});
-                    if(err) errors[field.name] = err;
-                }
+                if(!field.name) continue
+               
+                let value = values[field.name]
+                
+                let err = await functionReturnPersonError({field, value, validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')});
+                if(err) errors[field.name] = err;
             }
         }
 

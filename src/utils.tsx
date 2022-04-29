@@ -159,10 +159,10 @@ export function findInComponent(obj: object) {
     function each(obj) {
         if (Array.isArray(obj) || obj?.constructor == ({}).constructor) {
             for (let key in obj) {
-                if ((Array.isArray(obj[key]) || obj[key]?.constructor == (new Object).constructor)) {
-                    if (obj[key]?.isRenderField) items.push(obj[key])
-                    each(obj[key])
-                }
+                if (!(Array.isArray(obj[key]) || obj[key]?.constructor == (new Object).constructor)) continue
+
+                if (obj[key]?.isRenderField) items.push(obj[key])
+                each(obj[key])
             }
         }
     }

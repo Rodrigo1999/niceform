@@ -49,7 +49,7 @@ function useValues(_a) {
                     for (var _i = 0, allFields_1 = allFields; _i < allFields_1.length; _i++) {
                         var e = allFields_1[_i];
                         if (!e.dependence)
-                            return false;
+                            continue;
                         var thisDependence = e.dependence.split('-');
                         if (dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])) {
                             if (e.name)
