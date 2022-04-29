@@ -2,12 +2,13 @@ import Grid from 'dynamic-react-grid';
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
+import useData from '../hooks/useData';
 import { Create, Field, ParamsCreate, Props } from '../types';
-import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent, Context as ContextForm } from '../utils';
+import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent, Context as ContextForm, clone } from '../utils';
 
 let Form = function (props: Props, ref) {
 
-    let Context = useRef<Create>({
+    const Context = useRef<Create>({
         errorsControl: [],
         components: [],
         onError: () => null,
@@ -17,25 +18,35 @@ let Form = function (props: Props, ref) {
         context: {}
     });
     props = { ...Context.current.context, ...props }
-    let lastChangedField = useRef([] as ([name: any, value: any] | []))
-    let isSubmited = useRef(false)
-    let form = useRef<HTMLFormElement>(null);
-    let [fieldsFromRender, setFieldsFromRender] = useState<Array<Field>>([]);
+    const lastChangedField = useRef([] as ([name: any, value: any] | []))
+    const isSubmited = useRef(false)
+    const form = useRef<HTMLFormElement>(null);
+    const [fieldsFromRender, setFieldsFromRender] = useState<Array<Field>>([]);
 
     let fields = props.fields?.concat?.(props.staticFields || [])
 
-    let hookValues = useValues({
+    const hookValues = useValues({
         fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []),
         initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
 
-    let hookErrors = useErrors({
+    
+
+    const hookErrors = useErrors({
         fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []).filter(e => e.active != false),
         values: hookValues.valuesChain,
         errorsControl: Context?.current?.errorsControl,
         yupSchema: props.validationSchema
     });
 
+    const changeValue_data = useData({
+        fieldsFromRender, 
+        fields: props?.fields, 
+        hookValues,
+        hookErrors,
+        isSubmited
+    })
+    
     useEffect(() => {
         if (lastChangedField.current[0] && isSubmited.current) {
             hookErrors.verifyAllErrors(lastChangedField.current[0])
@@ -43,37 +54,47 @@ let Form = function (props: Props, ref) {
     }, [hookValues.values, isSubmited])
 
     //---------------------------------------------- ações básicas -------------------------------------
-    let actions = useMemo(() => ({
+    const actions = useMemo(() => ({
+        verifyAllErrors(){
+            return changeValue_data(({hookErrors}) => hookErrors.verifyAllErrors())
+        },
         clean() {
-            hookValues.cleanValues();
-            isSubmited.current = false
+            changeValue_data(({hookValues, hookErrors, isSubmited}) => {
+                setTimeout(() => {
+                    hookErrors.cleanErrors();
+                    hookValues.cleanValues();
+                    isSubmited.current = false
+                })
+            })
         },
         changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) {
-            let _name = '';
-            let _value: any;
-            if (typeof evt == 'string') {
-                _name = evt;
-                _value = value
-            } else {
-                _name = evt.target.name;
-                _value = evt.target.value
-            }
+            changeValue_data(({fieldsFromRender, fields, hookValues}) => {
+                let _name = '';
+                let _value: any;
+                if (typeof evt == 'string') {
+                    _name = evt;
+                    _value = value
+                } else {
+                    _name = evt.target.name;
+                    _value = evt.target.value
+                }
 
-            const fd = getAllFields(props?.fields || []).find(e => e.name == _name && e.active === false)
+                const fd = getAllFields(fields || []).concat(fieldsFromRender).find(e => e.name == _name && e.active === false)
 
-            hookValues.changeValue(_name, _value, function (field, value) {
-                lastChangedField.current = [_name, _value]
-                props.onChangeField?.(field || fd, value, others)
-            });
+                hookValues.changeValue(_name, _value, function (field, value) {
+                    lastChangedField.current = [_name, _value]
+                    props.onChangeField?.(field || fd, value, others)
+                });
+            })
         }
-    }), [fieldsFromRender, props?.fields])
+    }), [])
 
     //---------------------------------------------- submição de formulário -------------------------------------
-    let submit = async (evt) => {
+    const submit = async (evt) => {
         evt?.preventDefault?.();
         isSubmited.current = true;
         let errors = await hookErrors.verifyAllErrors()
-        let cloneValues = Object.assign({}, hookValues.values);
+        let cloneValues = clone(hookValues.values)
 
         if (fields) {
             let fd: Array<Field> = getAllFields(fields).filter(field => field.active != false);
@@ -91,7 +112,7 @@ let Form = function (props: Props, ref) {
                 cloneValues = objectToForm(cloneValues);
             }
             props.onSubmit?.(cloneValues);
-            if (props.clean) hookValues.cleanValues();
+            if (props.clean) actions.clean()
 
             return true;
         }
@@ -124,12 +145,12 @@ let Form = function (props: Props, ref) {
     }
 
     //---------------------------------------------- inicialização ---------------------------------------------
-    let argumentsToContexts = {
+    const argumentsToContexts = {
         props,
         errors: hookErrors.errors,
         values: hookValues.values,
         valuesChain: hookValues.valuesChain,
-        verifyAllErrors: hookErrors.verifyAllErrors,
+        verifyAllErrors: actions.verifyAllErrors,
         changeValue: actions.changeValue,
         submit,
         clean: actions.clean,
@@ -137,8 +158,8 @@ let Form = function (props: Props, ref) {
         renderField
     }
 
-    let localContext: Create = this?.(argumentsToContexts) || {};
-    let propsContext: Partial<Create> = props.create?.(argumentsToContexts) || {}
+    const localContext: Create = this?.(argumentsToContexts) || {};
+    const propsContext: Partial<Create> = props.create?.(argumentsToContexts) || {}
 
     Context.current = {
         errorsControl: propsContext.errorsControl || localContext.errorsControl || [],
@@ -158,7 +179,7 @@ let Form = function (props: Props, ref) {
 
     //---------------------------------------------- controle de linhas e colunas -------------------------------------
 
-    let configRow = {
+    const configRow = {
         row: true,
         alignItems: props.alignItems || 'flex-start',
         justify: props.justify,
@@ -179,7 +200,7 @@ let Form = function (props: Props, ref) {
             return (getComponentBase(Context?.current?.components, _f) || getComponentBase(Context?.current?.components, _f, 'default'))?.content?.(_f);
         }
     }
-    let render = (fields) => {
+    const render = (fields) => {
         return (
             fields.filter(e => e.visible != false).map((field, index) => {
                 let componentBaseField = getComponentBase(Context?.current?.components, field) || getComponentBase(Context?.current?.components, field, 'default');
@@ -254,5 +275,5 @@ let Form = function (props: Props, ref) {
     )
 }
 
-export let create = (data: (params: ParamsCreate) => Create) => (forwardRef(Form.bind(data)) as React.ForwardRefExoticComponent<React.PropsWithoutRef<Props> & { [x: string]: any }>);
+export const create = (data: (params: ParamsCreate) => Create) => (forwardRef(Form.bind(data)) as React.ForwardRefExoticComponent<React.PropsWithoutRef<Props> & { [x: string]: any }>);
 export default Form;

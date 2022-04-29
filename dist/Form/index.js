@@ -66,6 +66,7 @@ var dynamic_react_grid_1 = __importDefault(require("dynamic-react-grid"));
 var react_2 = require("react");
 var useErrors_1 = __importDefault(require("../hooks/useErrors"));
 var useValues_1 = __importDefault(require("../hooks/useValues"));
+var useData_1 = __importDefault(require("../hooks/useData"));
 var utils_1 = require("../utils");
 var Form = function (props, ref) {
     var _this = this;
@@ -95,6 +96,13 @@ var Form = function (props, ref) {
         errorsControl: (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.errorsControl,
         yupSchema: props.validationSchema
     });
+    var changeValue_data = (0, useData_1.default)({
+        fieldsFromRender: fieldsFromRender,
+        fields: props === null || props === void 0 ? void 0 : props.fields,
+        hookValues: hookValues,
+        hookErrors: hookErrors,
+        isSubmited: isSubmited
+    });
     (0, react_2.useEffect)(function () {
         if (lastChangedField.current[0] && isSubmited.current) {
             hookErrors.verifyAllErrors(lastChangedField.current[0]);
@@ -102,29 +110,44 @@ var Form = function (props, ref) {
     }, [hookValues.values, isSubmited]);
     //---------------------------------------------- ações básicas -------------------------------------
     var actions = (0, react_2.useMemo)(function () { return ({
+        verifyAllErrors: function () {
+            return changeValue_data(function (_a) {
+                var hookErrors = _a.hookErrors;
+                return hookErrors.verifyAllErrors();
+            });
+        },
         clean: function () {
-            hookValues.cleanValues();
-            isSubmited.current = false;
+            changeValue_data(function (_a) {
+                var hookValues = _a.hookValues, hookErrors = _a.hookErrors, isSubmited = _a.isSubmited;
+                setTimeout(function () {
+                    hookErrors.cleanErrors();
+                    hookValues.cleanValues();
+                    isSubmited.current = false;
+                });
+            });
         },
         changeValue: function (evt, value, others) {
-            var _name = '';
-            var _value;
-            if (typeof evt == 'string') {
-                _name = evt;
-                _value = value;
-            }
-            else {
-                _name = evt.target.name;
-                _value = evt.target.value;
-            }
-            var fd = (0, utils_1.getAllFields)((props === null || props === void 0 ? void 0 : props.fields) || []).find(function (e) { return e.name == _name && e.active === false; });
-            hookValues.changeValue(_name, _value, function (field, value) {
-                var _a;
-                lastChangedField.current = [_name, _value];
-                (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
+            changeValue_data(function (_a) {
+                var fieldsFromRender = _a.fieldsFromRender, fields = _a.fields, hookValues = _a.hookValues;
+                var _name = '';
+                var _value;
+                if (typeof evt == 'string') {
+                    _name = evt;
+                    _value = value;
+                }
+                else {
+                    _name = evt.target.name;
+                    _value = evt.target.value;
+                }
+                var fd = (0, utils_1.getAllFields)(fields || []).concat(fieldsFromRender).find(function (e) { return e.name == _name && e.active === false; });
+                hookValues.changeValue(_name, _value, function (field, value) {
+                    var _a;
+                    lastChangedField.current = [_name, _value];
+                    (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
+                });
             });
         }
-    }); }, [fieldsFromRender, props === null || props === void 0 ? void 0 : props.fields]);
+    }); }, []);
     //---------------------------------------------- submição de formulário -------------------------------------
     var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
         var errors, cloneValues, fd;
@@ -137,7 +160,7 @@ var Form = function (props, ref) {
                     return [4 /*yield*/, hookErrors.verifyAllErrors()];
                 case 1:
                     errors = _g.sent();
-                    cloneValues = Object.assign({}, hookValues.values);
+                    cloneValues = (0, utils_1.clone)(hookValues.values);
                     if (fields) {
                         fd = (0, utils_1.getAllFields)(fields).filter(function (field) { return field.active != false; });
                         fd.filter(function (e) { return e.output && e.visible != false; }).forEach(function (e) {
@@ -156,7 +179,7 @@ var Form = function (props, ref) {
                         }
                         (_e = props.onSubmit) === null || _e === void 0 ? void 0 : _e.call(props, cloneValues);
                         if (props.clean)
-                            hookValues.cleanValues();
+                            actions.clean();
                         return [2 /*return*/, true];
                     }
                     return [2 /*return*/];
@@ -186,7 +209,7 @@ var Form = function (props, ref) {
         errors: hookErrors.errors,
         values: hookValues.values,
         valuesChain: hookValues.valuesChain,
-        verifyAllErrors: hookErrors.verifyAllErrors,
+        verifyAllErrors: actions.verifyAllErrors,
         changeValue: actions.changeValue,
         submit: submit,
         clean: actions.clean,

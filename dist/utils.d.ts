@@ -1,5 +1,6 @@
 import { Field } from './types';
 export { default as dequal } from './dequal';
+export * from './useContextSelector';
 export declare function objectToForm(obj: Object, form?: any, level?: any): any;
 export declare function debounce(fn: any, ms: any): (...args: any[]) => void;
 export declare function getAllFields(fields: Array<Field>): Array<Field>;
@@ -13,4 +14,4 @@ export declare function validateSchemaOnlyField(schema: any, value: Object): Pro
 export declare function getComponentBase(components: any, field: Field, type?: any): any;
 export declare function filterProperty(_obj: object, filter?: Array<string> | ((value: Array<any>, index: number, arr: Array<Array<any>>) => boolean)): any[][];
 export declare function findInComponent(obj: object): any[];
-export * from './useContextSelector';
+export declare function clone(obj: any): any;

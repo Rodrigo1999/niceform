@@ -77,5 +77,7 @@ export default function useErrors({fields, errorsControl, yupSchema, values}: us
         })
         return errorsResult;
     }
-    return {errors, verifyAllErrors}
+    //---------------------------------------------- limpa os erros -------------------------------------
+    let cleanErrors = () => setErrors({})
+    return {errors, verifyAllErrors, cleanErrors}
 }

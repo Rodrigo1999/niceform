@@ -168,6 +168,8 @@ function useErrors(_a) {
             }
         });
     }); };
-    return { errors: errors, verifyAllErrors: verifyAllErrors };
+    //---------------------------------------------- limpa os erros -------------------------------------
+    var cleanErrors = function () { return setErrors({}); };
+    return { errors: errors, verifyAllErrors: verifyAllErrors, cleanErrors: cleanErrors };
 }
 exports.default = useErrors;
