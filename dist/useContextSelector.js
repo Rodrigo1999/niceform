@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useContextSelector = exports.useContext = exports.Context = exports.createContext = void 0;
 var react_1 = __importDefault(require("react"));
+var react_dom_1 = __importDefault(require("react-dom"));
 var dequal_1 = __importDefault(require("./dequal"));
 var CONTEXT_VALUE = Symbol();
 function createProvider(Provider) {
@@ -23,8 +24,11 @@ function createProvider(Provider) {
         }
         react_1.default.useEffect(function () {
             if (ref.current)
-                ref.current[CONTEXT_VALUE].listeners.forEach(function (callback) {
-                    callback(value);
+                react_dom_1.default.unstable_batchedUpdates(function () {
+                    if (ref.current)
+                        ref.current[CONTEXT_VALUE].listeners.forEach(function (callback) {
+                            callback(value);
+                        });
                 });
         }, [value]);
         return react_1.default.createElement(Provider, { value: ref.current }, children);

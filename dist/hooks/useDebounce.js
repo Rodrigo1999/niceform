@@ -42,7 +42,8 @@ function useDebounce(name, callback) {
     var time = (0, utils_2.useContextSelector)(function (state) { var _a, _b; return (_b = (_a = state.allFields.find(function (e) { return e.name == name; })) === null || _a === void 0 ? void 0 : _a.timeDebounce) !== null && _b !== void 0 ? _b : state.props.timeDebounce; }) || 200;
     var enableDebounce = (_a = (0, utils_2.useContextSelector)(function (state) { var _a, _b; return (_b = (_a = state.allFields.find(function (e) { return e.name == name; })) === null || _a === void 0 ? void 0 : _a.enableDebounce) !== null && _b !== void 0 ? _b : state.props.enableDebounce; })) !== null && _a !== void 0 ? _a : true;
     (0, react_1.useEffect)(function () {
-        setValue(_value || '');
+        if (value !== _value)
+            setValue(_value || '');
     }, [_value]);
     var onChangeDebounce = (0, react_1.useMemo)(function () { return (0, utils_1.debounce)(function (evt, value, other, cb) { return cb(evt, value, other); }, time); }, []);
     function changeValue(evt, value, other) {

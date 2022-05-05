@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import dequal from './dequal'
 
 const CONTEXT_VALUE = Symbol();
@@ -31,8 +32,11 @@ function createProvider<Value>(Provider){
 
         React.useEffect(() => {
             if(ref.current)
-            ref.current[CONTEXT_VALUE].listeners.forEach(callback => {
-                callback(value)
+            ReactDOM.unstable_batchedUpdates(() => {
+                if(ref.current)
+                ref.current[CONTEXT_VALUE].listeners.forEach(callback => {
+                    callback(value)
+                })
             })
         }, [value])
 

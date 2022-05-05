@@ -30,7 +30,7 @@ export default function useDebounce(name: string, callback?: Function){
     const enableDebounce = useContextSelector<ParamsCreate>(state => state.allFields.find(e => e.name==name)?.enableDebounce ?? state.props.enableDebounce) ?? true
 
     useEffect(() => {
-        setValue(_value || '')
+        if(value !== _value) setValue(_value || '')
     }, [_value])
 
     let onChangeDebounce = useMemo(() => debounce((evt, value, other, cb) => cb(evt, value, other), time), [])
