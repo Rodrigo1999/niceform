@@ -7,10 +7,6 @@ exports.useContextSelector = exports.useContext = exports.Context = exports.crea
 var react_1 = __importDefault(require("react"));
 var dequal_1 = __importDefault(require("./dequal"));
 var CONTEXT_VALUE = Symbol();
-function useForceUpdate() {
-    var _a = react_1.default.useState(0), value = _a[0], setValue = _a[1]; // integer state
-    return function () { return setValue(function (value) { return value + 1; }); }; // update the state to force render
-}
 function createProvider(Provider) {
     return function CreateProvider(_a) {
         var _b;
@@ -54,21 +50,19 @@ function useContext() {
 exports.useContext = useContext;
 function useContextSelector(callback) {
     var context = react_1.default.useContext(exports.Context)[CONTEXT_VALUE];
-    var result = react_1.default.useRef(callback(context.value));
-    var forceUpdate = useForceUpdate();
-    var checkUpdate = react_1.default.useCallback(function (ctx) {
+    var _a = react_1.default.useReducer(function (state, ctx) {
         var data = callback(ctx || context.value);
-        if (!(0, dequal_1.default)(result.current, data)) {
-            result.current = data;
-            forceUpdate();
+        if (!(0, dequal_1.default)(state, data)) {
+            return data;
         }
-    }, []);
+        return state;
+    }, callback(context.value)), value = _a[0], checkUpdate = _a[1];
     react_1.default.useEffect(function () {
         context.listeners.add(checkUpdate);
         return function () {
             context.listeners.delete(checkUpdate);
         };
     }, []);
-    return result.current;
+    return value;
 }
 exports.useContextSelector = useContextSelector;

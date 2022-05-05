@@ -15,11 +15,6 @@ interface Provider<Value>{
     Provider: React.ComponentType<{ value: Value; children: React.ReactNode }>
 }
 
-function useForceUpdate(){
-    const [value, setValue] = React.useState(0); // integer state
-    return () => setValue(value => value + 1); // update the state to force render
-}
-
 function createProvider<Value>(Provider){
     return function CreateProvider({value, children}: {value: Value, children: React.ReactNode}){
         const ref = React.useRef<Ref<Value> | null>(null)
@@ -65,17 +60,15 @@ export function useContext(){
 export function useContextSelector<Value>(callback: (value: Value) => any){
     const context = React.useContext(Context as React.Context<Ref<Value>>)[CONTEXT_VALUE]
 
-    const result = React.useRef(callback(context.value))
-
-    const forceUpdate = useForceUpdate();
-
-    const checkUpdate = React.useCallback((ctx) => {
+    const [value, checkUpdate] = (React as any).useReducer((state, ctx) => {
         const data = callback(ctx || context.value)
-        if(!dequal(result.current, data)){
-            result.current = data
-            forceUpdate()
+        
+        if(!dequal(state, data)){
+            return data
         }
-    }, [])
+
+        return state
+    }, callback(context.value))
 
     React.useEffect(() => {
         context.listeners.add(checkUpdate)
@@ -84,5 +77,5 @@ export function useContextSelector<Value>(callback: (value: Value) => any){
         }
     }, [])
 
-    return result.current
+    return value
 }
