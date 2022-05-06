@@ -62,7 +62,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clone = exports.findInComponent = exports.filterProperty = exports.getComponentBase = exports.validateSchemaOnlyField = exports.errorSchema = exports.resolveInitialValue = exports.getValuesByKeyRange = exports.resolveValue = exports.getField = exports.getAllFields = exports.debounce = exports.objectToForm = exports.dequal = void 0;
+exports.clone = exports.findComponentByRenderFieldOnTreeDom = exports.filterProperty = exports.getComponentBase = exports.validateSchemaOnlyField = exports.errorSchema = exports.resolveInitialValue = exports.getValuesByKeyRange = exports.resolveValue = exports.getField = exports.getAllFields = exports.debounce = exports.objectToForm = exports.dequal = void 0;
 var dequal_1 = require("./dequal");
 Object.defineProperty(exports, "dequal", { enumerable: true, get: function () { return __importDefault(dequal_1).default; } });
 //---------------------------------------------- useReducersHook and evit re render ---------------------------
@@ -170,7 +170,8 @@ exports.getValuesByKeyRange = getValuesByKeyRange;
 //---------------------------------------------- resolve valores iniciais já pré definidos ---------------------------
 function resolveInitialValue(values, valuesCloned) {
     Object.keys(values).forEach(function (k) {
-        if (typeof valuesCloned[k] == 'object')
+        var _a;
+        if (Array.isArray(valuesCloned[k]) || ((_a = valuesCloned[k]) === null || _a === void 0 ? void 0 : _a.constructor) == ({}).constructor)
             resolveInitialValue(values[k], valuesCloned[k]);
         if (valuesCloned[k] === undefined) {
             valuesCloned[k] = values[k];
@@ -244,7 +245,7 @@ function getComponentBase(components, field, type) {
     });
 }
 exports.getComponentBase = getComponentBase;
-//---------------------------------------------- filter Properties ---------------------------
+//---------------------------------------------- Filtro de propriedades ---------------------------
 function filterProperty(_obj, filter) {
     var obj = Object.entries(_obj);
     if (Array.isArray(filter)) {
@@ -258,7 +259,7 @@ function filterProperty(_obj, filter) {
 }
 exports.filterProperty = filterProperty;
 //---------------------------------------------- find items by renderField in Dom element ---------------------------
-function findInComponent(obj) {
+function findComponentByRenderFieldOnTreeDom(obj) {
     var items = Array();
     function each(obj) {
         var _a, _b;
@@ -275,7 +276,7 @@ function findInComponent(obj) {
     each(obj);
     return items.map(function (e) { return e.constructorObject; }).filter(Boolean);
 }
-exports.findInComponent = findInComponent;
+exports.findComponentByRenderFieldOnTreeDom = findComponentByRenderFieldOnTreeDom;
 //---------------------------------------------- clone object ---------------------------
 function clone(obj) {
     var copy;

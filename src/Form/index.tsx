@@ -4,7 +4,18 @@ import useErrors from '../hooks/useErrors';
 import useValues from '../hooks/useValues';
 import useData from '../hooks/useData';
 import { Create, Field, ParamsCreate, Props } from '../types';
-import { getAllFields, getComponentBase, objectToForm, dequal, filterProperty, debounce, findInComponent, Context as ContextForm, clone, getField } from '../utils';
+import { 
+    getAllFields,
+    getComponentBase,
+    objectToForm,
+    dequal,
+    filterProperty,
+    debounce,
+    findComponentByRenderFieldOnTreeDom,
+    Context as ContextForm,
+    clone,
+    getField 
+} from '../utils';
 
 let Form = function (props: Props, ref) {
 
@@ -26,18 +37,18 @@ let Form = function (props: Props, ref) {
     let fields = props.fields?.concat?.(props.staticFields || [])
 
     const hookValues = useValues({
-        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []),
+        fields: (fields || []).concat(fieldsFromRender),
         initialValues: useMemo(() => Object.assign({}, props.initialValues, props.fixedValues), [props.initialValues, props.fixedValues])
     });
 
     const hookErrors = useErrors({
-        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []).filter(e => e.active != false),
+        fields: (fields || []).concat(fieldsFromRender).filter(e => e.active != false),
         values: hookValues.valuesChain,
         errorsControl: Context?.current?.errorsControl,
         yupSchema: props.validationSchema
     });
 
-    const changeValue_data = useData({
+    const getStates = useData({
         fieldsFromRender, 
         fields: props?.fields, 
         hookValues,
@@ -54,15 +65,13 @@ let Form = function (props: Props, ref) {
     //---------------------------------------------- ações básicas -------------------------------------
     const actions = useMemo(() => ({
         verifyAllErrors(){
-            return changeValue_data(({hookErrors}) => hookErrors.verifyAllErrors())
+            return getStates(({hookErrors}) => hookErrors.verifyAllErrors())
         },
         clean() {
-            changeValue_data(({hookValues, hookErrors, isSubmited}) => {
-                setTimeout(() => {
-                    hookErrors.cleanErrors();
-                    hookValues.cleanValues();
-                    isSubmited.current = false
-                })
+            getStates(({hookValues, hookErrors, isSubmited}) => {
+                hookErrors.cleanErrors();
+                hookValues.cleanValues();
+                isSubmited.current = false
             })
         },
         changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) {
@@ -76,7 +85,7 @@ let Form = function (props: Props, ref) {
                 _value = evt.target.value
             }
 
-            changeValue_data(({fieldsFromRender, fields, hookValues}) => {
+            getStates(({fieldsFromRender, fields, hookValues}) => {
                 
                 const fd = getField((fields || []).concat(fieldsFromRender), _name, false)
 
@@ -117,10 +126,10 @@ let Form = function (props: Props, ref) {
         }
     }
 
-    // -------------------------------------------- renderização flúida de um componente-----------------------
+    // --------------------------------------- renderização isolada de um determinado componente------------------------------
 
     function renderField(obj: Field){
-        let comp = obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj)
+        let comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj)
         
         comp = {...comp }
 
@@ -147,11 +156,10 @@ let Form = function (props: Props, ref) {
 
             setFieldsFromRender([...fields])
         }
-
     }, 100), [])
 
     function connectChildren(element){
-        setFieldsFromRenderDebounce(findInComponent(element), fieldsFromRender)  
+        setFieldsFromRenderDebounce(findComponentByRenderFieldOnTreeDom(element), fieldsFromRender)  
         return element
     }
 
@@ -172,14 +180,16 @@ let Form = function (props: Props, ref) {
     const localContext: Create = this?.(argumentsToContexts) || {};
     const propsContext: Partial<Create> = props.create?.(argumentsToContexts) || {}
 
+    const getAttr = (attr: string, defaultValue?: any) => propsContext[attr] || localContext[attr] || defaultValue
+
     Context.current = {
-        errorsControl: propsContext.errorsControl || localContext.errorsControl || [],
-        components: propsContext.components || localContext.components || [],
-        onError: propsContext.onError || localContext.onError || (() => null),
-        ComponentWrap: propsContext.ComponentWrap || localContext.ComponentWrap || Grid,
-        button: propsContext.button || localContext.button,
-        footerProps: propsContext.footerProps || localContext.footerProps,
-        context: propsContext.context || localContext.context,
+        errorsControl: getAttr('errorsControl', []),
+        components: getAttr('components', []),
+        onError: getAttr('onError', () => null),
+        ComponentWrap: getAttr('ComponentWrap', Grid),
+        button: getAttr('button'),
+        footerProps: getAttr('footerProps'),
+        context: getAttr('context'),
     }
     //---------------------------------------------- controle de referência -------------------------------------
 
@@ -198,23 +208,31 @@ let Form = function (props: Props, ref) {
         direction: props.direction,
         spacing: props.spacing || 2,
     }
-    function wrapChildren(f: Field) {
+
+    const _getComponentBase = (components, field) => getComponentBase(components, field) || getComponentBase(components, field, 'default')
+
+    function getFieldComponent(field: Field) {
+        
         if (fields || props.children) {
-            if (f.fields) return render(f.fields);
-            if (f.type == 'component' && f.content) {
-                const comp = f.content({ ...argumentsToContexts, fields: fields || [] });
-                setFieldsFromRenderDebounce(findInComponent(comp), fieldsFromRender)
+
+            if (field.fields) return render(field.fields);
+            if (field.type == 'component' && field.content) {
+                const comp = field.content({ ...argumentsToContexts, fields: fields || [] });
+                setFieldsFromRenderDebounce(findComponentByRenderFieldOnTreeDom(comp), fieldsFromRender)
                 return comp
             }
 
-            let _f = filterProperty(f, ['input', 'output'])
-            return (getComponentBase(Context?.current?.components, _f) || getComponentBase(Context?.current?.components, _f, 'default'))?.content?.(_f);
+            let _field = filterProperty(field, ['input', 'output'])
+            return _getComponentBase(Context?.current?.components, _field).content?.(_field);
+            
         }
     }
     const render = (fields) => {
         return (
             fields.filter(e => e.visible != false).map((field, index) => {
-                let componentBaseField = getComponentBase(Context?.current?.components, field) || getComponentBase(Context?.current?.components, field, 'default');
+                let componentBaseField = _getComponentBase(Context?.current?.components, field);
+                let fieldComponent = field.wrap ? field.wrap(getFieldComponent(field)) : getFieldComponent(field)
+
                 return !props.children ? (
                     <Context.current.ComponentWrap
                         {...(!!field.fields ? configRow : {})}
@@ -229,7 +247,7 @@ let Form = function (props: Props, ref) {
                         xl={field.xl}
                         xl-m={field['xl-m']}
                         order={field.order}
-                        key={field.name || index}
+                        key={field.name || field.key || index}
                         {...componentBaseField?.contentProps}
                         {...props.grid?.col}
                         {...field.contentProps}
@@ -241,12 +259,10 @@ let Form = function (props: Props, ref) {
                         className={['form-field', componentBaseField?.contentProps?.className, field.contentProps?.className].filter(Boolean).join(' ')}
                     >
                         {field.beforeContent}
-                        {field.wrap ? field.wrap(wrapChildren(field)) : wrapChildren(field)}
+                        {fieldComponent}
                         {field.afterContent}
                     </Context.current.ComponentWrap>
-                ) : field.wrap ? field.wrap(wrapChildren(field)) : wrapChildren(field)
-
-
+                ) : fieldComponent
             })
         )
     }

@@ -94,7 +94,7 @@ export function getValuesByKeyRange(values: Object) {
 //---------------------------------------------- resolve valores iniciais já pré definidos ---------------------------
 export function resolveInitialValue(values: Object, valuesCloned: Object) {
     Object.keys(values).forEach(k => {
-        if (typeof valuesCloned[k] == 'object') resolveInitialValue(values[k], valuesCloned[k])
+        if (Array.isArray(valuesCloned[k]) || valuesCloned[k]?.constructor == ({}).constructor) resolveInitialValue(values[k], valuesCloned[k])
         if (valuesCloned[k] === undefined) {
             valuesCloned[k] = values[k]
         }
@@ -139,7 +139,7 @@ export function getComponentBase(components, field: Field, type?: any) {
     })
 }
 
-//---------------------------------------------- filter Properties ---------------------------
+//---------------------------------------------- Filtro de propriedades ---------------------------
 
 export function filterProperty(_obj: object, filter?: Array<string> | ((value: Array<any>, index: number, arr: Array<Array<any>>) => boolean)){
   let obj: Array<Array<any>> = Object.entries(_obj)
@@ -154,7 +154,7 @@ export function filterProperty(_obj: object, filter?: Array<string> | ((value: A
 
 //---------------------------------------------- find items by renderField in Dom element ---------------------------
 
-export function findInComponent(obj: object) {
+export function findComponentByRenderFieldOnTreeDom(obj: object) {
     const items = Array()
     function each(obj) {
         if (Array.isArray(obj) || obj?.constructor == ({}).constructor) {

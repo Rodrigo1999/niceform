@@ -70,7 +70,7 @@ var useData_1 = __importDefault(require("../hooks/useData"));
 var utils_1 = require("../utils");
 var Form = function (props, ref) {
     var _this = this;
-    var _a, _b, _c, _d, _e, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g;
     var Context = (0, react_2.useRef)({
         errorsControl: [],
         components: [],
@@ -84,19 +84,19 @@ var Form = function (props, ref) {
     var lastChangedField = (0, react_2.useRef)([]);
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
-    var _j = (0, react_2.useState)([]), fieldsFromRender = _j[0], setFieldsFromRender = _j[1];
+    var _h = (0, react_2.useState)([]), fieldsFromRender = _h[0], setFieldsFromRender = _h[1];
     var fields = (_b = (_a = props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, props.staticFields || []);
     var hookValues = (0, useValues_1.default)({
-        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []),
+        fields: (fields || []).concat(fieldsFromRender),
         initialValues: (0, react_2.useMemo)(function () { return Object.assign({}, props.initialValues, props.fixedValues); }, [props.initialValues, props.fixedValues])
     });
     var hookErrors = (0, useErrors_1.default)({
-        fields: (fields || []).concat(fieldsFromRender.length ? fieldsFromRender : []).filter(function (e) { return e.active != false; }),
+        fields: (fields || []).concat(fieldsFromRender).filter(function (e) { return e.active != false; }),
         values: hookValues.valuesChain,
         errorsControl: (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.errorsControl,
         yupSchema: props.validationSchema
     });
-    var changeValue_data = (0, useData_1.default)({
+    var getStates = (0, useData_1.default)({
         fieldsFromRender: fieldsFromRender,
         fields: props === null || props === void 0 ? void 0 : props.fields,
         hookValues: hookValues,
@@ -111,19 +111,17 @@ var Form = function (props, ref) {
     //---------------------------------------------- ações básicas -------------------------------------
     var actions = (0, react_2.useMemo)(function () { return ({
         verifyAllErrors: function () {
-            return changeValue_data(function (_a) {
+            return getStates(function (_a) {
                 var hookErrors = _a.hookErrors;
                 return hookErrors.verifyAllErrors();
             });
         },
         clean: function () {
-            changeValue_data(function (_a) {
+            getStates(function (_a) {
                 var hookValues = _a.hookValues, hookErrors = _a.hookErrors, isSubmited = _a.isSubmited;
-                setTimeout(function () {
-                    hookErrors.cleanErrors();
-                    hookValues.cleanValues();
-                    isSubmited.current = false;
-                });
+                hookErrors.cleanErrors();
+                hookValues.cleanValues();
+                isSubmited.current = false;
             });
         },
         changeValue: function (evt, value, others) {
@@ -137,7 +135,7 @@ var Form = function (props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value;
             }
-            changeValue_data(function (_a) {
+            getStates(function (_a) {
                 var fieldsFromRender = _a.fieldsFromRender, fields = _a.fields, hookValues = _a.hookValues;
                 var fd = (0, utils_1.getField)((fields || []).concat(fieldsFromRender), _name, false);
                 hookValues.changeValue(_name, _value, function (field, value) {
@@ -152,14 +150,14 @@ var Form = function (props, ref) {
     var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
         var errors, cloneValues, fd;
         var _a, _b, _c, _d, _e;
-        return __generator(this, function (_g) {
-            switch (_g.label) {
+        return __generator(this, function (_f) {
+            switch (_f.label) {
                 case 0:
                     (_a = evt === null || evt === void 0 ? void 0 : evt.preventDefault) === null || _a === void 0 ? void 0 : _a.call(evt);
                     isSubmited.current = true;
                     return [4 /*yield*/, hookErrors.verifyAllErrors()];
                 case 1:
-                    errors = _g.sent();
+                    errors = _f.sent();
                     cloneValues = (0, utils_1.clone)(hookValues.values);
                     if (fields) {
                         fd = (0, utils_1.getAllFields)(fields).filter(function (field) { return field.active != false; });
@@ -185,9 +183,9 @@ var Form = function (props, ref) {
             }
         });
     }); };
-    // -------------------------------------------- renderização flúida de um componente-----------------------
+    // --------------------------------------- renderização isolada de um determinado componente------------------------------
     function renderField(obj) {
-        var comp = obj.wrap ? obj.wrap(wrapChildren(obj)) : wrapChildren(obj);
+        var comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj);
         comp = __assign({}, comp);
         Object.defineProperty(comp, 'constructorObject', {
             enumerable: false,
@@ -209,7 +207,7 @@ var Form = function (props, ref) {
         }
     }, 100); }, []);
     function connectChildren(element) {
-        setFieldsFromRenderDebounce((0, utils_1.findInComponent)(element), fieldsFromRender);
+        setFieldsFromRenderDebounce((0, utils_1.findComponentByRenderFieldOnTreeDom)(element), fieldsFromRender);
         return element;
     }
     //---------------------------------------------- inicialização ---------------------------------------------
@@ -227,14 +225,15 @@ var Form = function (props, ref) {
     };
     var localContext = (this === null || this === void 0 ? void 0 : this(argumentsToContexts)) || {};
     var propsContext = ((_d = props.create) === null || _d === void 0 ? void 0 : _d.call(props, argumentsToContexts)) || {};
+    var getAttr = function (attr, defaultValue) { return propsContext[attr] || localContext[attr] || defaultValue; };
     Context.current = {
-        errorsControl: propsContext.errorsControl || localContext.errorsControl || [],
-        components: propsContext.components || localContext.components || [],
-        onError: propsContext.onError || localContext.onError || (function () { return null; }),
-        ComponentWrap: propsContext.ComponentWrap || localContext.ComponentWrap || dynamic_react_grid_1.default,
-        button: propsContext.button || localContext.button,
-        footerProps: propsContext.footerProps || localContext.footerProps,
-        context: propsContext.context || localContext.context,
+        errorsControl: getAttr('errorsControl', []),
+        components: getAttr('components', []),
+        onError: getAttr('onError', function () { return null; }),
+        ComponentWrap: getAttr('ComponentWrap', dynamic_react_grid_1.default),
+        button: getAttr('button'),
+        footerProps: getAttr('footerProps'),
+        context: getAttr('context'),
     };
     //---------------------------------------------- controle de referência -------------------------------------
     (0, react_2.useImperativeHandle)(Object.keys(props.innerRef || ref || {}).length ? props.innerRef || ref : { current: null }, function () { return (__assign(__assign({}, argumentsToContexts), { form: form === null || form === void 0 ? void 0 : form.current, setValues: hookValues.setValues })); });
@@ -247,33 +246,35 @@ var Form = function (props, ref) {
         direction: props.direction,
         spacing: props.spacing || 2,
     };
-    function wrapChildren(f) {
-        var _a, _b, _c, _d;
+    var _getComponentBase = function (components, field) { return (0, utils_1.getComponentBase)(components, field) || (0, utils_1.getComponentBase)(components, field, 'default'); };
+    function getFieldComponent(field) {
+        var _a, _b, _c;
         if (fields || props.children) {
-            if (f.fields)
-                return render(f.fields);
-            if (f.type == 'component' && f.content) {
-                var comp = f.content(__assign(__assign({}, argumentsToContexts), { fields: fields || [] }));
-                setFieldsFromRenderDebounce((0, utils_1.findInComponent)(comp), fieldsFromRender);
+            if (field.fields)
+                return render(field.fields);
+            if (field.type == 'component' && field.content) {
+                var comp = field.content(__assign(__assign({}, argumentsToContexts), { fields: fields || [] }));
+                setFieldsFromRenderDebounce((0, utils_1.findComponentByRenderFieldOnTreeDom)(comp), fieldsFromRender);
                 return comp;
             }
-            var _f = (0, utils_1.filterProperty)(f, ['input', 'output']);
-            return (_d = (_c = ((0, utils_1.getComponentBase)((_a = Context === null || Context === void 0 ? void 0 : Context.current) === null || _a === void 0 ? void 0 : _a.components, _f) || (0, utils_1.getComponentBase)((_b = Context === null || Context === void 0 ? void 0 : Context.current) === null || _b === void 0 ? void 0 : _b.components, _f, 'default'))) === null || _c === void 0 ? void 0 : _c.content) === null || _d === void 0 ? void 0 : _d.call(_c, _f);
+            var _field = (0, utils_1.filterProperty)(field, ['input', 'output']);
+            return (_c = (_b = _getComponentBase((_a = Context === null || Context === void 0 ? void 0 : Context.current) === null || _a === void 0 ? void 0 : _a.components, _field)).content) === null || _c === void 0 ? void 0 : _c.call(_b, _field);
         }
     }
     var render = function (fields) {
         return (fields.filter(function (e) { return e.visible != false; }).map(function (field, index) {
-            var _a, _b, _c, _d, _e, _g, _h, _j, _k;
-            var componentBaseField = (0, utils_1.getComponentBase)((_a = Context === null || Context === void 0 ? void 0 : Context.current) === null || _a === void 0 ? void 0 : _a.components, field) || (0, utils_1.getComponentBase)((_b = Context === null || Context === void 0 ? void 0 : Context.current) === null || _b === void 0 ? void 0 : _b.components, field, 'default');
-            return !props.children ? ((0, react_1.createElement)(Context.current.ComponentWrap, __assign({}, (!!field.fields ? configRow : {}), { xs: field.xs, "xs-m": field['xs-m'], sm: field.sm, "sm-m": field['sm-m'], md: field.md, "md-m": field['md-m'], lg: field.lg, "lg-m": field['lg-m'], xl: field.xl, "xl-m": field['xl-m'], order: field.order, key: field.name || index }, componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps, (_c = props.grid) === null || _c === void 0 ? void 0 : _c.col, field.contentProps, { style: __assign(__assign(__assign({}, (_e = (_d = props.grid) === null || _d === void 0 ? void 0 : _d.col) === null || _e === void 0 ? void 0 : _e.style), (_g = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _g === void 0 ? void 0 : _g.style), (_h = field.contentProps) === null || _h === void 0 ? void 0 : _h.style), className: ['form-field', (_j = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _j === void 0 ? void 0 : _j.className, (_k = field.contentProps) === null || _k === void 0 ? void 0 : _k.className].filter(Boolean).join(' ') }),
+            var _a, _b, _c, _d, _e, _f, _g, _h;
+            var componentBaseField = _getComponentBase((_a = Context === null || Context === void 0 ? void 0 : Context.current) === null || _a === void 0 ? void 0 : _a.components, field);
+            var fieldComponent = field.wrap ? field.wrap(getFieldComponent(field)) : getFieldComponent(field);
+            return !props.children ? ((0, react_1.createElement)(Context.current.ComponentWrap, __assign({}, (!!field.fields ? configRow : {}), { xs: field.xs, "xs-m": field['xs-m'], sm: field.sm, "sm-m": field['sm-m'], md: field.md, "md-m": field['md-m'], lg: field.lg, "lg-m": field['lg-m'], xl: field.xl, "xl-m": field['xl-m'], order: field.order, key: field.name || field.key || index }, componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps, (_b = props.grid) === null || _b === void 0 ? void 0 : _b.col, field.contentProps, { style: __assign(__assign(__assign({}, (_d = (_c = props.grid) === null || _c === void 0 ? void 0 : _c.col) === null || _d === void 0 ? void 0 : _d.style), (_e = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _e === void 0 ? void 0 : _e.style), (_f = field.contentProps) === null || _f === void 0 ? void 0 : _f.style), className: ['form-field', (_g = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _g === void 0 ? void 0 : _g.className, (_h = field.contentProps) === null || _h === void 0 ? void 0 : _h.className].filter(Boolean).join(' ') }),
                 field.beforeContent,
-                field.wrap ? field.wrap(wrapChildren(field)) : wrapChildren(field),
-                field.afterContent)) : field.wrap ? field.wrap(wrapChildren(field)) : wrapChildren(field);
+                fieldComponent,
+                field.afterContent)) : fieldComponent;
         }));
     };
     //---------------------------------------------- COMPONENTE -------------------------------------
     return ((0, jsx_runtime_1.jsx)(utils_1.Context.Provider, __assign({ value: argumentsToContexts }, { children: (0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_e = props.grid) === null || _e === void 0 ? void 0 : _e.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
-                        (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, (_g = Context === null || Context === void 0 ? void 0 : Context.current) === null || _g === void 0 ? void 0 : _g.footerProps, { children: [props.beforeButtonElement, props.onSubmit && ((_h = Context === null || Context === void 0 ? void 0 : Context.current) === null || _h === void 0 ? void 0 : _h.button), props.afterButtonElement] }))] })) })) })));
+                        (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, (_f = Context === null || Context === void 0 ? void 0 : Context.current) === null || _f === void 0 ? void 0 : _f.footerProps, { children: [props.beforeButtonElement, props.onSubmit && ((_g = Context === null || Context === void 0 ? void 0 : Context.current) === null || _g === void 0 ? void 0 : _g.button), props.afterButtonElement] }))] })) })) })));
 };
 var create = function (data) { return (0, react_2.forwardRef)(Form.bind(data)); };
 exports.create = create;

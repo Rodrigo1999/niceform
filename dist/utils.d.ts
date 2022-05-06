@@ -12,5 +12,5 @@ export declare function errorSchema(schema: any, fields: Array<Field>, values: O
 export declare function validateSchemaOnlyField(schema: any, value: Object): Promise<any>;
 export declare function getComponentBase(components: any, field: Field, type?: any): any;
 export declare function filterProperty(_obj: object, filter?: Array<string> | ((value: Array<any>, index: number, arr: Array<Array<any>>) => boolean)): any[][];
-export declare function findInComponent(obj: object): any[];
+export declare function findComponentByRenderFieldOnTreeDom(obj: object): any[];
 export declare function clone(obj: any): any;
