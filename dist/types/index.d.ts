@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { useErrorsFunctionParams, ReturnUseErrorsFunctionParams } from './hooks';
+import { ReturnUseErrorsFunctionParams, errorsControl } from './hooks';
 export declare type ValueKeys = {
     [key: string]: any;
 };
@@ -408,7 +408,7 @@ export interface Create {
             ],
      * }))
      */
-    errorsControl?: useErrorsFunctionParams<Field>['errorsControl'];
+    errorsControl?: errorsControl<Field>;
     /**
      * Here I define the components that must be used in the form
      * @example
@@ -473,7 +473,7 @@ export interface Create {
      * Step anything, it will be inserted in the tag considered as footer of the form
      */
     footerProps?: Object;
-    context?: Omit<Props, 'fields' | 'staticFields' | 'onSubmit' | 'initialValues' | 'onChangeField' | 'onBeforeSubmit' | 'innerRef' | 'validationSchema' | 'create' | 'children'>;
+    context?: Omit<Props, 'fields' | 'staticFields' | 'onSubmit' | 'initialValues' | 'onChangeField' | 'onBeforeSubmit' | 'validationSchema' | 'create' | 'children'>;
 }
 export interface ParamsCreate {
     /**
@@ -729,10 +729,10 @@ export interface Props extends Row {
      * @example
      * const ref = useRef(null)
      * <Form
-     *      innerRef={ref}
+     *      ref={ref}
      *  />
      */
-    innerRef?: {
+    ref?: {
         current: any;
     };
     /**

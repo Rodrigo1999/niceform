@@ -70,7 +70,7 @@ var useData_1 = __importDefault(require("../hooks/useData"));
 var utils_1 = require("../utils");
 var Form = function (props, ref) {
     var _this = this;
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d;
     var Context = (0, react_2.useRef)({
         errorsControl: [],
         components: [],
@@ -84,21 +84,21 @@ var Form = function (props, ref) {
     var lastChangedField = (0, react_2.useRef)([]);
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
-    var _h = (0, react_2.useState)([]), fieldsFromRender = _h[0], setFieldsFromRender = _h[1];
+    var _e = (0, react_2.useState)([]), fieldsFromRender = _e[0], setFieldsFromRender = _e[1];
     var fields = (_b = (_a = props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, props.staticFields || []);
     var hookValues = (0, useValues_1.default)({
         fields: (fields || []).concat(fieldsFromRender),
         initialValues: (0, react_2.useMemo)(function () { return Object.assign({}, props.initialValues, props.fixedValues); }, [props.initialValues, props.fixedValues])
     });
     var hookErrors = (0, useErrors_1.default)({
-        fields: (fields || []).concat(fieldsFromRender).filter(function (e) { return e.active != false; }),
+        fields: (fields || []).concat(fieldsFromRender).filter(function (e) { return e.active !== false; }),
         values: hookValues.valuesChain,
-        errorsControl: (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.errorsControl,
+        getErrorsControl: function () { return Context.current.errorsControl || []; },
         yupSchema: props.validationSchema
     });
     var getStates = (0, useData_1.default)({
         fieldsFromRender: fieldsFromRender,
-        fields: props === null || props === void 0 ? void 0 : props.fields,
+        fields: props.fields,
         hookValues: hookValues,
         hookErrors: hookErrors,
         isSubmited: isSubmited
@@ -110,19 +110,11 @@ var Form = function (props, ref) {
     }, [hookValues.values, isSubmited]);
     //---------------------------------------------- ações básicas -------------------------------------
     var actions = (0, react_2.useMemo)(function () { return ({
-        verifyAllErrors: function () {
-            return getStates(function (_a) {
-                var hookErrors = _a.hookErrors;
-                return hookErrors.verifyAllErrors();
-            });
-        },
         clean: function () {
-            getStates(function (_a) {
-                var hookValues = _a.hookValues, hookErrors = _a.hookErrors, isSubmited = _a.isSubmited;
-                hookErrors.cleanErrors();
-                hookValues.cleanValues();
-                isSubmited.current = false;
-            });
+            var _a = getStates(), hookValues = _a.hookValues, hookErrors = _a.hookErrors, isSubmited = _a.isSubmited;
+            hookErrors.cleanErrors();
+            hookValues.cleanValues();
+            isSubmited.current = false;
         },
         changeValue: function (evt, value, others) {
             var _name = '';
@@ -135,20 +127,18 @@ var Form = function (props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value;
             }
-            getStates(function (_a) {
-                var fieldsFromRender = _a.fieldsFromRender, fields = _a.fields, hookValues = _a.hookValues;
-                var fd = (0, utils_1.getField)((fields || []).concat(fieldsFromRender), _name, false);
-                hookValues.changeValue(_name, _value, function (field, value) {
-                    var _a;
-                    lastChangedField.current = [_name, _value];
-                    (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
-                });
+            var _a = getStates(), fieldsFromRender = _a.fieldsFromRender, fields = _a.fields, hookValues = _a.hookValues;
+            var fd = (0, utils_1.getField)((fields || []).concat(fieldsFromRender), _name, false);
+            hookValues.changeValue(_name, _value, function (field, value) {
+                var _a;
+                lastChangedField.current = [_name, _value];
+                (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
             });
         }
     }); }, []);
     //---------------------------------------------- submição de formulário -------------------------------------
     var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
-        var errors, cloneValues, fd;
+        var errors, valuesCloned, field;
         var _a, _b, _c, _d, _e;
         return __generator(this, function (_f) {
             switch (_f.label) {
@@ -158,23 +148,23 @@ var Form = function (props, ref) {
                     return [4 /*yield*/, hookErrors.verifyAllErrors()];
                 case 1:
                     errors = _f.sent();
-                    cloneValues = (0, utils_1.clone)(hookValues.values);
+                    valuesCloned = (0, utils_1.clone)(hookValues.values);
                     if (fields) {
-                        fd = (0, utils_1.getAllFields)(fields).filter(function (field) { return field.active != false; });
-                        fd.filter(function (e) { return e.output && e.visible != false; }).forEach(function (e) {
+                        field = (0, utils_1.getFlatFields)(fields).filter(function (field) { return field.active !== false; });
+                        field.filter(function (e) { return e.output && e.visible !== false; }).forEach(function (e) {
                             if (e.name)
-                                cloneValues[e.name] = e.output(hookValues.values[e.name]);
+                                valuesCloned[e.name] = e.output(hookValues.values[e.name]);
                         });
                     }
-                    (_b = props.onBeforeSubmit) === null || _b === void 0 ? void 0 : _b.call(props, cloneValues);
-                    if (!!Object.values(errors).length) {
-                        (_d = (_c = Context === null || Context === void 0 ? void 0 : Context.current) === null || _c === void 0 ? void 0 : _c.onError) === null || _d === void 0 ? void 0 : _d.call(_c, errors);
+                    (_b = props.onBeforeSubmit) === null || _b === void 0 ? void 0 : _b.call(props, valuesCloned);
+                    if (!!Object.keys(errors).length) {
+                        (_d = (_c = Context.current).onError) === null || _d === void 0 ? void 0 : _d.call(_c, errors);
                         return [2 /*return*/, false];
                     }
                     else {
                         if (props.formData)
-                            cloneValues = (0, utils_1.objectToForm)(cloneValues);
-                        (_e = props.onSubmit) === null || _e === void 0 ? void 0 : _e.call(props, cloneValues);
+                            valuesCloned = (0, utils_1.objectToForm)(valuesCloned);
+                        (_e = props.onSubmit) === null || _e === void 0 ? void 0 : _e.call(props, valuesCloned);
                         if (props.clean)
                             actions.clean();
                         return [2 /*return*/, true];
@@ -200,7 +190,7 @@ var Form = function (props, ref) {
         return comp;
     }
     var setFieldsFromRenderDebounce = (0, react_2.useMemo)(function () { return (0, utils_1.debounce)(function (fields, fieldsFromRender) {
-        var filter = function (data) { return typeof data[1] != 'function'; };
+        var filter = function (data) { return typeof data[1] !== 'function'; };
         var formatFieldsToCompare = function (fields) { return fields.map(function (field) { return (0, utils_1.filterProperty)(field || {}, filter); }); };
         if (!(0, utils_1.dequal)(formatFieldsToCompare(fields), formatFieldsToCompare(fieldsFromRender))) {
             setFieldsFromRender(__spreadArray([], fields, true));
@@ -216,15 +206,15 @@ var Form = function (props, ref) {
         errors: hookErrors.errors,
         values: hookValues.values,
         valuesChain: hookValues.valuesChain,
-        verifyAllErrors: actions.verifyAllErrors,
+        verifyAllErrors: hookErrors.verifyAllErrors,
         changeValue: actions.changeValue,
         submit: submit,
         clean: actions.clean,
-        allFields: (fields ? (0, utils_1.getAllFields)(fields) : []).concat(fieldsFromRender),
+        allFields: (fields ? (0, utils_1.getFlatFields)(fields) : []).concat(fieldsFromRender),
         renderField: renderField
     };
     var localContext = (this === null || this === void 0 ? void 0 : this(argumentsToContexts)) || {};
-    var propsContext = ((_d = props.create) === null || _d === void 0 ? void 0 : _d.call(props, argumentsToContexts)) || {};
+    var propsContext = ((_c = props.create) === null || _c === void 0 ? void 0 : _c.call(props, argumentsToContexts)) || {};
     var getAttr = function (attr, defaultValue) { return propsContext[attr] || localContext[attr] || defaultValue; };
     Context.current = {
         errorsControl: getAttr('errorsControl', []),
@@ -236,7 +226,7 @@ var Form = function (props, ref) {
         context: getAttr('context'),
     };
     //---------------------------------------------- controle de referência -------------------------------------
-    (0, react_2.useImperativeHandle)(Object.keys(props.innerRef || ref || {}).length ? props.innerRef || ref : { current: null }, function () { return (__assign(__assign({}, argumentsToContexts), { form: form === null || form === void 0 ? void 0 : form.current, setValues: hookValues.setValues })); });
+    (0, react_2.useImperativeHandle)(ref, function () { return (__assign(__assign({}, argumentsToContexts), { form: form.current, setValues: hookValues.setValues })); });
     //---------------------------------------------- controle de linhas e colunas -------------------------------------
     var configRow = {
         row: true,
@@ -248,7 +238,7 @@ var Form = function (props, ref) {
     };
     var _getComponentBase = function (components, field) { return (0, utils_1.getComponentBase)(components, field) || (0, utils_1.getComponentBase)(components, field, 'default'); };
     function getFieldComponent(field) {
-        var _a, _b, _c;
+        var _a, _b;
         if (fields || props.children) {
             if (field.fields)
                 return render(field.fields);
@@ -258,23 +248,23 @@ var Form = function (props, ref) {
                 return comp;
             }
             var _field = (0, utils_1.filterProperty)(field, ['input', 'output']);
-            return (_c = (_b = _getComponentBase((_a = Context === null || Context === void 0 ? void 0 : Context.current) === null || _a === void 0 ? void 0 : _a.components, _field)).content) === null || _c === void 0 ? void 0 : _c.call(_b, _field);
+            return (_b = (_a = _getComponentBase(Context.current.components, _field)).content) === null || _b === void 0 ? void 0 : _b.call(_a, _field);
         }
     }
     var render = function (fields) {
-        return (fields.filter(function (e) { return e.visible != false; }).map(function (field, index) {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
-            var componentBaseField = _getComponentBase((_a = Context === null || Context === void 0 ? void 0 : Context.current) === null || _a === void 0 ? void 0 : _a.components, field);
+        return (fields.filter(function (e) { return e.visible !== false; }).map(function (field, index) {
+            var _a, _b, _c, _d, _e, _f, _g;
+            var componentBaseField = _getComponentBase(Context.current.components, field);
             var fieldComponent = field.wrap ? field.wrap(getFieldComponent(field)) : getFieldComponent(field);
-            return !props.children ? ((0, react_1.createElement)(Context.current.ComponentWrap, __assign({}, (!!field.fields ? configRow : {}), { xs: field.xs, "xs-m": field['xs-m'], sm: field.sm, "sm-m": field['sm-m'], md: field.md, "md-m": field['md-m'], lg: field.lg, "lg-m": field['lg-m'], xl: field.xl, "xl-m": field['xl-m'], order: field.order, key: field.name || field.key || index }, componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps, (_b = props.grid) === null || _b === void 0 ? void 0 : _b.col, field.contentProps, { style: __assign(__assign(__assign({}, (_d = (_c = props.grid) === null || _c === void 0 ? void 0 : _c.col) === null || _d === void 0 ? void 0 : _d.style), (_e = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _e === void 0 ? void 0 : _e.style), (_f = field.contentProps) === null || _f === void 0 ? void 0 : _f.style), className: ['form-field', (_g = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _g === void 0 ? void 0 : _g.className, (_h = field.contentProps) === null || _h === void 0 ? void 0 : _h.className].filter(Boolean).join(' ') }),
+            return !props.children ? ((0, react_1.createElement)(Context.current.ComponentWrap, __assign({}, (!!field.fields ? configRow : {}), { xs: field.xs, "xs-m": field['xs-m'], sm: field.sm, "sm-m": field['sm-m'], md: field.md, "md-m": field['md-m'], lg: field.lg, "lg-m": field['lg-m'], xl: field.xl, "xl-m": field['xl-m'], order: field.order, key: field.name || field.key || index }, componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps, (_a = props.grid) === null || _a === void 0 ? void 0 : _a.col, field.contentProps, { style: __assign(__assign(__assign({}, (_c = (_b = props.grid) === null || _b === void 0 ? void 0 : _b.col) === null || _c === void 0 ? void 0 : _c.style), (_d = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _d === void 0 ? void 0 : _d.style), (_e = field.contentProps) === null || _e === void 0 ? void 0 : _e.style), className: ['form-field', (_f = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _f === void 0 ? void 0 : _f.className, (_g = field.contentProps) === null || _g === void 0 ? void 0 : _g.className].filter(Boolean).join(' ') }),
                 field.beforeContent,
                 fieldComponent,
                 field.afterContent)) : fieldComponent;
         }));
     };
     //---------------------------------------------- COMPONENTE -------------------------------------
-    return ((0, jsx_runtime_1.jsx)(utils_1.Context.Provider, __assign({ value: argumentsToContexts }, { children: (0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_e = props.grid) === null || _e === void 0 ? void 0 : _e.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
-                        (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, (_f = Context === null || Context === void 0 ? void 0 : Context.current) === null || _f === void 0 ? void 0 : _f.footerProps, { children: [props.beforeButtonElement, props.onSubmit && ((_g = Context === null || Context === void 0 ? void 0 : Context.current) === null || _g === void 0 ? void 0 : _g.button), props.afterButtonElement] }))] })) })) })));
+    return ((0, jsx_runtime_1.jsx)(utils_1.Context.Provider, __assign({ value: argumentsToContexts }, { children: (0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_d = props.grid) === null || _d === void 0 ? void 0 : _d.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
+                        (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, Context.current.footerProps, { children: [props.beforeButtonElement, props.onSubmit && Context.current.button, props.afterButtonElement] }))] })) })) })));
 };
 var create = function (data) { return (0, react_2.forwardRef)(Form.bind(data)); };
 exports.create = create;

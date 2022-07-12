@@ -11,14 +11,15 @@ export interface ReturnUseValuesFunction<Fields> {
     changeValue: (name: any, val: any, callback?: (field: Fields, value: any) => void, basic?: boolean) => void;
 }
 declare type useErrorsFunctionParamsReturn = string | Boolean | undefined | void;
+export declare type errorsControl<Fields> = Array<({ field, value, validateSchema }: {
+    field: Fields;
+    value: any;
+    validateSchema: (schema: any) => Promise<any>;
+}) => useErrorsFunctionParamsReturn | Promise<useErrorsFunctionParamsReturn>>;
 export interface useErrorsFunctionParams<Fields> {
     fields?: Array<Fields>;
     yupSchema?: any;
-    errorsControl?: Array<({ field, value, validateSchema }: {
-        field: Fields;
-        value: any;
-        validateSchema: (schema: any) => Promise<any>;
-    }) => useErrorsFunctionParamsReturn | Promise<useErrorsFunctionParamsReturn>>;
+    getErrorsControl?: () => errorsControl<Fields>;
     values: Object;
 }
 export interface ReturnUseErrorsFunctionParams {

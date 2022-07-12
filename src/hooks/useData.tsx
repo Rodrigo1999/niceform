@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function useData(...data){
+export default function useData<T>(data){
     let collector = React.useRef(null as any)
 
-    collector.current = callback => callback(...data) 
+    collector.current = () => data
 
-    return (cb) => collector.current(cb)
+    return () => collector.current() as T
 }

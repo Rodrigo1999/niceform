@@ -62,7 +62,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clone = exports.findComponentByRenderFieldOnTreeDom = exports.filterProperty = exports.getComponentBase = exports.validateSchemaOnlyField = exports.errorSchema = exports.resolveInitialValue = exports.getValuesByKeyRange = exports.resolveValue = exports.getField = exports.getAllFields = exports.debounce = exports.objectToForm = exports.dequal = void 0;
+exports.clone = exports.findComponentByRenderFieldOnTreeDom = exports.filterProperty = exports.getComponentBase = exports.validateSchemaOnlyField = exports.errorSchema = exports.resolveInitialValue = exports.getValuesByKeyRange = exports.resolveValue = exports.getField = exports.getFlatFields = exports.debounce = exports.objectToForm = exports.dequal = void 0;
 var dequal_1 = require("./dequal");
 Object.defineProperty(exports, "dequal", { enumerable: true, get: function () { return __importDefault(dequal_1).default; } });
 //---------------------------------------------- useReducersHook and evit re render ---------------------------
@@ -110,13 +110,13 @@ function debounce(fn, ms) {
 }
 exports.debounce = debounce;
 //---------------------------------------------- retorna todos os campos -------------------------------------
-function getAllFields(fields) {
-    return fields.flatMap(function (field) { return field.fields ? getAllFields(field.fields) : field; });
+function getFlatFields(fields) {
+    return fields.flatMap(function (field) { return field.fields ? getFlatFields(field.fields) : field; });
 }
-exports.getAllFields = getAllFields;
+exports.getFlatFields = getFlatFields;
 //---------------------------------------------- retorna um campo específico ---------------------------
 function getField(fields, name, active) {
-    var allFields = getAllFields(fields);
+    var allFields = getFlatFields(fields);
     if (active !== undefined)
         allFields = allFields.filter(function (e) { return e.active != active; });
     return allFields.find(function (e) { return e.name == name; });
@@ -129,7 +129,7 @@ function resolveValue(obj, prop, val, valueIsUndefined) {
     prop = prop.replace(/(\[\d+\])/g, '.$1').replace(/\[|]/g, '');
     var arr = prop.split('.');
     return arr.reduce(function (prev, curr, i) {
-        var last = arr.length - 1 == i;
+        var last = arr.length == (i + 1);
         if (!prev[curr] && !last) {
             if (!isNaN(parseInt(arr[i + 1]))) {
                 prev[curr] = [];
@@ -149,17 +149,17 @@ function getValuesByKeyRange(values) {
     var arrValues = [];
     function getKeysRange(obj) {
         var entries = Object.entries(obj);
-        var map = entries.map(function (e) {
-            var _a;
-            if (Array.isArray(e[1]) || ((_a = e[1]) === null || _a === void 0 ? void 0 : _a.constructor) == ({}).constructor) {
-                return getKeysRange(e[1]).map(function (n) { return "".concat(e[0], ".").concat(n); });
+        var map = entries.map(function (_a) {
+            var key = _a[0], value = _a[1];
+            if (Array.isArray(value) || (value === null || value === void 0 ? void 0 : value.constructor) == ({}).constructor) {
+                return getKeysRange(value).map(function (n) { return "".concat(key, ".").concat(n); });
             }
             else {
-                arrValues.push(e[1]);
-                return e[0];
+                arrValues.push(value);
+                return key;
             }
         });
-        return map.flatMap(function (e) { return e; });
+        return map.flat();
     }
     return getKeysRange(values).reduce(function (obj, e, i) {
         obj[e] = arrValues[i];
@@ -186,14 +186,14 @@ function errorSchema(schema, fields, values, basic, omit) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (!(schema === null || schema === void 0 ? void 0 : schema.validate))
+                        return [2 /*return*/];
                     omitSchema = [];
                     if (omit) {
                         arrFieldsKey_1 = fields.map(function (e) { return e.name || ''; });
                         arrFieldsSchema = Object.keys(schema.fields);
                         omitSchema = arrFieldsSchema.filter(function (e) { return !arrFieldsKey_1.includes(e); });
                     }
-                    if (!(schema === null || schema === void 0 ? void 0 : schema.validate))
-                        return [2 /*return*/];
                     if (basic) {
                         fieldsToKeyValue = getValuesByKeyRange(values);
                     }

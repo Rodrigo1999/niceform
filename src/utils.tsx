@@ -43,12 +43,12 @@ export function debounce(fn, ms) {
 }
 
 //---------------------------------------------- retorna todos os campos -------------------------------------
-export function getAllFields(fields: Array<Field>): Array<Field> {
-    return fields.flatMap((field) => field.fields ? getAllFields(field.fields) : field);
+export function getFlatFields(fields: Array<Field>): Array<Field> {
+    return fields.flatMap((field) => field.fields ? getFlatFields(field.fields) : field);
 }
 //---------------------------------------------- retorna um campo específico ---------------------------
 export function getField(fields: Array<Field>, name: string, active: Boolean): Field | undefined {
-    let allFields = getAllFields(fields);
+    let allFields = getFlatFields(fields);
     if (active !== undefined) allFields = allFields.filter(e => e.active != active);
     return allFields.find(e => e.name == name);
 }
@@ -59,7 +59,7 @@ export function resolveValue(obj: Object, prop: String, val?: any, valueIsUndefi
     let arr = prop.split('.');
 
     return arr.reduce(function (prev, curr, i) {
-        let last = arr.length - 1 == i;
+        let last = arr.length == (i + 1);
         if (!prev[curr] && !last) {
             if (!isNaN(parseInt(arr[i + 1]))) {
                 prev[curr] = []
@@ -75,16 +75,16 @@ export function resolveValue(obj: Object, prop: String, val?: any, valueIsUndefi
 export function getValuesByKeyRange(values: Object) {
     let arrValues: Array<any> = []
     function getKeysRange(obj) {
-        let entries = Object.entries(obj)
-        let map = entries.map((e: Array<any>) => {
-            if (Array.isArray(e[1]) || e[1]?.constructor == ({}).constructor) {
-                return getKeysRange(e[1]).map(n => `${e[0]}.${n}`)
+        let entries: Array<any> = Object.entries(obj)
+        let map = entries.map(([key, value]) => {
+            if (Array.isArray(value) || value?.constructor == ({}).constructor) {
+                return getKeysRange(value).map(n => `${key}.${n}`)
             } else {
-                arrValues.push(e[1])
-                return e[0]
+                arrValues.push(value)
+                return key
             }
         })
-        return map.flatMap(e => e)
+        return map.flat()
     }
     return getKeysRange(values).reduce((obj, e, i) => {
         obj[e] = arrValues[i]
@@ -103,13 +103,15 @@ export function resolveInitialValue(values: Object, valuesCloned: Object) {
 
 //---------------------------------------------- tratativa do schema com yup ---------------------------
 export async function errorSchema(schema: any, fields: Array<Field>, values: Object, basic?: Boolean, omit?: Boolean): Promise<Array<Object> | undefined> {
+    if (!schema?.validate) return
+    
     let omitSchema: Array<String> = [];
     if(omit){
-        let arrFieldsKey: Array<String> = fields.map(e => e.name || '')
-        let arrFieldsSchema: Array<String> = Object.keys(schema.fields);
+        let arrFieldsKey: typeof omitSchema = fields.map(e => e.name || '')
+        let arrFieldsSchema: typeof omitSchema = Object.keys(schema.fields);
         omitSchema = arrFieldsSchema.filter(e => !arrFieldsKey.includes(e));
     }
-    if (!schema?.validate) return
+    
     let fieldsToKeyValue;
     if(basic){
         fieldsToKeyValue = getValuesByKeyRange(values);

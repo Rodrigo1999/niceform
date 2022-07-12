@@ -38,8 +38,10 @@ export default function useDebounce(name: string, callback?: Function){
     function changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) : void
     function changeValue(evt, value, other){
         evt = {...evt, target: evt.target}
+        
         if(enableDebounce) onChangeDebounce(evt, value, other, callback || _changeValue)
         else _changeValue(evt, value, other)
+
         if(typeof evt !== 'string') setValue(evt.target.value)
         else setValue(value)
     }

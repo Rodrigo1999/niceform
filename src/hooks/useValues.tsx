@@ -1,77 +1,97 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Field, ValueKeys } from '../types';
-import { ReturnUseValuesFunction, UseValuesFunctionParams } from '../types/hooks';
-import { getAllFields, resolveInitialValue, resolveValue, getValuesByKeyRange } from '../utils';
+import type { Field, ValueKeys } from '../types';
+import type { ReturnUseValuesFunction, UseValuesFunctionParams } from '../types/hooks';
+import { resolveInitialValue, resolveValue, getValuesByKeyRange } from '../utils';
+import useData from './useData'
+import useMemoizedAllFields from './useMemoizedAllFields'
 
 export default function useValues({fields, initialValues}: UseValuesFunctionParams<Field>) : ReturnUseValuesFunction<Field>{
-    let [values, setValues] = useState({});
-    let allFields: Array<Field> = useMemo(() => {
-        let _fields = fields || [];
-        if(!fields) {
-            _fields = Object.entries(initialValues || {}).map(e => ({name: e[0]}))
-        }
-        return getAllFields(_fields)
-    }, [fields, initialValues])
-    //---------------------------------------------- seta o valor inicial do formulário -------------------------------------
-    let setInitialValues = () => {
-		let fieldsActives =  allFields.filter(e => e.active != false);
-        let _values = Object.assign({}, initialValues);
-        
-		if(_values){
-            let valuesCloned = Object.assign({}, values);
-            
-			fieldsActives.forEach(e => {
-			  	if(e.name && e.input){
-				    _values[e.name] = e.input(_values[e.name]);
-			  	}
-			});
-            resolveInitialValue(_values, valuesCloned)
-            
-			setValues(valuesCloned);
-		}
-    }
     
-    //---------------------------------------------- altera o valor de um determinado campo -------------------------------------
-    let changeValue = (name: any, val: any, cb?: Function) => {
+    let allFields = useMemoizedAllFields(fields, initialValues)
 
-        let fd = fields ? allFields.find(e => e.name == name) : undefined
+    const [values, setValues] = useState(initialValues ? Object.fromEntries(Object.entries(initialValues).map(([key,]) => [key, undefined])) : {})
+
+    const getStates = useData<UseValuesFunctionParams<Field> & {allFields: typeof allFields, values: typeof values}>({
+        fields, 
+        initialValues, 
+        values, 
+        allFields
+    })
+
+    const actions = useMemo(() => ({
+        //---------------------------------------------- seta o valor inicial do formulário -------------------------------------
+        setInitialValues(){
+            const {initialValues, allFields, values} = getStates()
+            
+            let fieldsActives =  allFields.filter(field => field.active != false);
+            
+            let _values = Object.assign({}, initialValues);
+            
+            if(_values){
+                let valuesCopied = Object.assign({}, values)
+                
+                fieldsActives.forEach(field => {
+                    if(field.name && field.input){
+                        _values[field.name] = field.input(_values[field.name])
+                    }
+                })
+
+                resolveInitialValue(_values, valuesCopied)
+                setValues(valuesCopied)
+            }
+        },
+        //---------------------------------------------- altera o valor de um determinado campo -------------------------------------
+        changeValue(name: any, val: any, callback?: Function){
+            
+            const {fields, allFields} = getStates()
         
-        if(fd?.active !== false){
-            setValues((values: ValueKeys) => {
-                if(fd?.dependence){
-                    let dependence = fd.dependence?.split?.('-');
-                    for(let e of allFields){
-                        if(!e.dependence) continue
-                        
-                        let thisDependence = e.dependence.split('-');
-                        if(dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])){
-                            if(e.name) resolveValue(values, e.name, undefined, true)
+            const field = fields ? allFields.find(e => e.name == name) : undefined
+            
+            if(field?.active !== false){
+                setValues((values: ValueKeys) => {                    
+                    if(field?.dependence){
+                        let dependence = field.dependence?.split?.('-');
+                        for(let field of allFields){
+                            if(!field.dependence || !field.name) continue
+                            let thisDependence = field.dependence.split('-')
+                            if(dependence[0] == thisDependence[0] && parseInt(thisDependence[1]) > parseInt(dependence[1])){
+                                resolveValue(values, field.name, undefined, true)
+                            }
                         }
                     }
-                }
-                resolveValue(values, name, val);
-                return {...values}
-            });
-        }
-        
-        cb?.(fd, val);
-    }
-
-    //---------------------------------------------- limpesa do formulário-------------------------------------
-    let cleanValues = () => {
-        let fd = allFields.filter(e => e.active != false);
-        setValues(values => {
-            for(let element of fd){
-                if(element.name) resolveValue(values, element.name, undefined, true)
+                    
+                    resolveValue(values, name, val);
+                    return {...values}
+                })
             }
-            return {...values}
-        });
-    }
+            
+            callback?.(field, val) 
+        },
+        //---------------------------------------------- limpesa do formulário-------------------------------------
+        cleanValues(){
+            const {allFields} = getStates()
+           
+            const fields = allFields.filter(e => e.active != false);
+            setValues(values => {
+                for(let field of fields){
+                    if(field.name) resolveValue(values, field.name, undefined, true)
+                }
+                return {...values}   
+            })
+        }
+    }), [])
 
     //---------------------------------------------- inicialização -------------------------------------
     useEffect(() => {
-        setInitialValues();
+        if(Object.values(initialValues || {}).length) actions.setInitialValues()
     }, [initialValues])
 
-    return {values, cleanValues, setValues, setInitialValues, changeValue, valuesChain: getValuesByKeyRange(values)};
+    return {
+        values, 
+        cleanValues: actions.cleanValues, 
+        setInitialValues: actions.setInitialValues, 
+        changeValue: actions.changeValue, 
+        setValues, 
+        valuesChain: useMemo(() => getValuesByKeyRange(values), [values])
+    }
 }

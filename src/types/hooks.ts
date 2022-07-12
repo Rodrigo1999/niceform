@@ -12,14 +12,16 @@ export interface ReturnUseValuesFunction<Fields>{
 }
 
 type useErrorsFunctionParamsReturn = string | Boolean | undefined | void
+
+export type errorsControl<Fields> = Array<({field, value, validateSchema}:{
+    field: Fields, 
+    value: any, 
+    validateSchema: (schema: any) => Promise<any>
+}) => useErrorsFunctionParamsReturn | Promise<useErrorsFunctionParamsReturn>>
 export interface useErrorsFunctionParams<Fields>{
     fields?: Array<Fields>, 
     yupSchema?: any, //item
-    errorsControl?: Array<({field, value, validateSchema}:{
-        field: Fields, 
-        value: any, 
-        validateSchema: (schema: any) => Promise<any>
-    }) => useErrorsFunctionParamsReturn | Promise<useErrorsFunctionParamsReturn>>,
+    getErrorsControl?: () => errorsControl<Fields>,
     values: Object
 }
 export interface ReturnUseErrorsFunctionParams{

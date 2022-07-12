@@ -1,1 +1,1 @@
-export default function useData(...data: any[]): (cb: any) => any;
+export default function useData<T>(data: any): () => T;

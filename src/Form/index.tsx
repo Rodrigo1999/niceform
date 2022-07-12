@@ -5,7 +5,7 @@ import useValues from '../hooks/useValues';
 import useData from '../hooks/useData';
 import { Create, Field, ParamsCreate, Props } from '../types';
 import { 
-    getAllFields,
+    getFlatFields,
     getComponentBase,
     objectToForm,
     dequal,
@@ -28,6 +28,7 @@ let Form = function (props: Props, ref) {
         footerProps: {},
         context: {}
     });
+
     props = { ...Context.current.context, ...props }
     const lastChangedField = useRef([] as ([name: any, value: any] | []))
     const isSubmited = useRef(false)
@@ -42,20 +43,26 @@ let Form = function (props: Props, ref) {
     });
 
     const hookErrors = useErrors({
-        fields: (fields || []).concat(fieldsFromRender).filter(e => e.active != false),
+        fields: (fields || []).concat(fieldsFromRender).filter(e => e.active !== false),
         values: hookValues.valuesChain,
-        errorsControl: Context?.current?.errorsControl,
+        getErrorsControl: () => Context.current.errorsControl || [],
         yupSchema: props.validationSchema
     });
 
-    const getStates = useData({
+    const getStates = useData<{
+        fieldsFromRender: typeof fieldsFromRender,
+        fields: typeof props.fields,
+        hookValues: typeof hookValues,
+        hookErrors: typeof hookErrors,
+        isSubmited: typeof isSubmited,
+    }>({
         fieldsFromRender, 
-        fields: props?.fields, 
+        fields: props.fields, 
         hookValues,
         hookErrors,
         isSubmited
     })
-    
+   
     useEffect(() => {
         if (lastChangedField.current[0] && isSubmited.current) {
             hookErrors.verifyAllErrors(lastChangedField.current[0])
@@ -64,15 +71,13 @@ let Form = function (props: Props, ref) {
 
     //---------------------------------------------- ações básicas -------------------------------------
     const actions = useMemo(() => ({
-        verifyAllErrors(){
-            return getStates(({hookErrors}) => hookErrors.verifyAllErrors())
-        },
         clean() {
-            getStates(({hookValues, hookErrors, isSubmited}) => {
-                hookErrors.cleanErrors();
-                hookValues.cleanValues();
-                isSubmited.current = false
-            })
+            const {hookValues, hookErrors, isSubmited} = getStates()
+            
+            hookErrors.cleanErrors();
+            hookValues.cleanValues();
+            isSubmited.current = false
+            
         },
         changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) {
             let _name = '';
@@ -84,16 +89,15 @@ let Form = function (props: Props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value
             }
+            
+            const {fieldsFromRender, fields, hookValues} = getStates()
+             
+            const fd = getField((fields || []).concat(fieldsFromRender), _name, false)
 
-            getStates(({fieldsFromRender, fields, hookValues}) => {
-                
-                const fd = getField((fields || []).concat(fieldsFromRender), _name, false)
-
-                hookValues.changeValue(_name, _value, function (field, value) {
-                    lastChangedField.current = [_name, _value]
-                    props.onChangeField?.(field || fd, value, others)
-                });
-            })
+            hookValues.changeValue(_name, _value, function (field, value) {
+                lastChangedField.current = [_name, _value]
+                props.onChangeField?.(field || fd, value, others)
+            });
         }
     }), [])
 
@@ -102,24 +106,24 @@ let Form = function (props: Props, ref) {
         evt?.preventDefault?.();
         isSubmited.current = true;
         let errors = await hookErrors.verifyAllErrors()
-        let cloneValues = clone(hookValues.values)
+        let valuesCloned = clone(hookValues.values)
 
         if (fields) {
-            let fd: Array<Field> = getAllFields(fields).filter(field => field.active != false);
-            fd.filter(e => e.output && e.visible != false).forEach(e => {
-                if (e.name) cloneValues[e.name] = e.output!(hookValues.values[e.name]);
+            let field: Array<Field> = getFlatFields(fields).filter(field => field.active !== false);
+            field.filter(e => e.output && e.visible !== false).forEach(e => {
+                if (e.name) valuesCloned[e.name] = e.output!(hookValues.values[e.name]);
             });
         }
 
-        props.onBeforeSubmit?.(cloneValues);
-        if (!!Object.values(errors).length) {
-            Context?.current?.onError?.(errors);
+        props.onBeforeSubmit?.(valuesCloned);
+        if (!!Object.keys(errors).length) {
+            Context.current.onError?.(errors);
             return false;
         } else {
             
-            if (props.formData) cloneValues = objectToForm(cloneValues);
+            if (props.formData) valuesCloned = objectToForm(valuesCloned);
 
-            props.onSubmit?.(cloneValues);
+            props.onSubmit?.(valuesCloned);
             if (props.clean) actions.clean()
 
             return true;
@@ -148,7 +152,7 @@ let Form = function (props: Props, ref) {
     }
 
     const setFieldsFromRenderDebounce = useMemo(() => debounce(function(fields, fieldsFromRender){
-        const filter = data => typeof data[1] != 'function'
+        const filter = data => typeof data[1] !== 'function'
 
         const formatFieldsToCompare = fields => fields.map(field => filterProperty(field || {}, filter))
 
@@ -169,11 +173,11 @@ let Form = function (props: Props, ref) {
         errors: hookErrors.errors,
         values: hookValues.values,
         valuesChain: hookValues.valuesChain,
-        verifyAllErrors: actions.verifyAllErrors,
+        verifyAllErrors: hookErrors.verifyAllErrors,
         changeValue: actions.changeValue,
         submit,
         clean: actions.clean,
-        allFields: (fields ? getAllFields(fields) : []).concat(fieldsFromRender),
+        allFields: (fields ? getFlatFields(fields) : []).concat(fieldsFromRender),
         renderField
     }
 
@@ -193,10 +197,7 @@ let Form = function (props: Props, ref) {
     }
     //---------------------------------------------- controle de referência -------------------------------------
 
-    useImperativeHandle(
-        Object.keys(props.innerRef || ref || {}).length ? props.innerRef || ref : { current: null },
-        () => ({ ...argumentsToContexts, form: form?.current, setValues: hookValues.setValues })
-    );
+    useImperativeHandle(ref, () => ({ ...argumentsToContexts, form: form.current, setValues: hookValues.setValues }))
 
     //---------------------------------------------- controle de linhas e colunas -------------------------------------
 
@@ -223,14 +224,14 @@ let Form = function (props: Props, ref) {
             }
 
             let _field = filterProperty(field, ['input', 'output'])
-            return _getComponentBase(Context?.current?.components, _field).content?.(_field);
+            return _getComponentBase(Context.current.components, _field).content?.(_field);
             
         }
     }
     const render = (fields) => {
         return (
-            fields.filter(e => e.visible != false).map((field, index) => {
-                let componentBaseField = _getComponentBase(Context?.current?.components, field);
+            fields.filter(e => e.visible !== false).map((field, index) => {
+                let componentBaseField = _getComponentBase(Context.current.components, field);
                 let fieldComponent = field.wrap ? field.wrap(getFieldComponent(field)) : getFieldComponent(field)
 
                 return !props.children ? (
@@ -286,10 +287,10 @@ let Form = function (props: Props, ref) {
                                 justify='flex-end'
                                 className='content-buttons'
                                 style={{ marginTop: 20 }}
-                                {...Context?.current?.footerProps}
+                                {...Context.current.footerProps}
                             >
                                 {props.beforeButtonElement}
-                                {props.onSubmit && Context?.current?.button}
+                                {props.onSubmit && Context.current.button}
                                 {props.afterButtonElement}
                             </Context.current.ComponentWrap>
 

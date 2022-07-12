@@ -1,83 +1,102 @@
 import React, { useMemo, useState } from 'react';
 import { Field } from '../types';
 import { ReturnUseErrorsFunctionParams, useErrorsFunctionParams } from '../types/hooks';
-import { errorSchema, getAllFields, validateSchemaOnlyField } from '../utils';
+import { errorSchema, validateSchemaOnlyField } from '../utils';
+import useData from './useData'
+import useMemoizedAllFields from './useMemoizedAllFields'
 
-export default function useErrors({fields, errorsControl, yupSchema, values}: useErrorsFunctionParams<Field>): ReturnUseErrorsFunctionParams{
+export default function useErrors({fields, getErrorsControl, yupSchema, values}: useErrorsFunctionParams<Field>): ReturnUseErrorsFunctionParams{
     let [errors, setErrors] = useState({});
     
-    let allFields: Array<Field> = useMemo(() => {
-        let _fields = fields || [];
-        if(!fields) {
-            _fields = Object.entries(values || {}).map(e => ({name: e[0]}))
-        }
-        return getAllFields(_fields)
-    }, [fields, values])
-    //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
-    let verifyErrors = async (field) => {
-        let errors = {};
+    const allFields = useMemoizedAllFields(fields, values)
 
-        if(errorsControl){
+    const getStates = useData<useErrorsFunctionParams<Field> & {allFields: typeof allFields}>({
+        fields, 
+        getErrorsControl, 
+        yupSchema, 
+        values, 
+        allFields
+    })
 
-            for (let functionReturnPersonError of errorsControl) {
-                if(!field.name) continue
-               
-                let value = values[field.name]
+    const actions = useMemo(() => ({
+        //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
+        async verifyErrors(field){
+            const {getErrorsControl, values, allFields} = getStates()
                 
-                let err = await functionReturnPersonError({field, value, validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')});
+            const errors = {};
+
+            if(getErrorsControl){
+
+                const errorsControl = getErrorsControl()
+                for (let callbackCustomError of errorsControl) {
+                    if(!field.name) continue
+                
+                    let value = values[field.name]
+                    
+                    let err = await callbackCustomError({field, value, validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')});
+                    if(err) errors[field.name] = err;
+                }
+            }
+
+            if(field.error){
+                const value = values[field.name]
+                const err = await field.error({
+                    fields: allFields, 
+                    field, 
+                    values, 
+                    value,
+                    validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')
+                });
                 if(err) errors[field.name] = err;
             }
-        }
-
-        if(field.error){
-            let value = values[field.name]
-            let err = await field.error({
-                fields: allFields, 
-                field, 
-                values, 
-                value,
-                validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')
-            });
-            if(err) errors[field.name] = err;
-        }
-        
-        return errors;
-    }
-    //---------------------------------------------- salva no estado e retorna os erros encontrados para todos os campos -------------------------------------
-    let verifyAllErrors = async (name?: String) => {
-        let fd: Array<Field> = [];
-        if(name){
-            fd = allFields.filter(e => e.active != false && e.name == name);
-        }else{
-            fd = allFields.filter(e => e.active != false);
-        }
-        let errors = {}
-        let errorYup;
-        if(yupSchema){
-            errorYup = await errorSchema(yupSchema, fd, values, !fields, !!name)
-        }
-        
-        for (let field of fd) {
-            if(!field.name) continue
-            
-            let errorThisField = await verifyErrors(field)
-            errors = {...errors, ...errorThisField}
-            
-        }
-        let errorsResult = {...errorYup, ...errors}
-        setErrors(errors => {
-            let errorsCloned = Object.assign({}, errors)
-            fd.forEach(field => {
-                if(field.name) delete errorsCloned[field.name];
-            })
-            if(name && !errors[name.toString()] && !errorsResult[name.toString()]){
-                return errors;
+            return errors
+        },
+        //---------------------------------------------- salva no estado e retorna os erros encontrados para todos os campos -------------------------------------
+        async verifyAllErrors(name?: String) {
+            const {fields, yupSchema, values, allFields} = getStates()
+                
+            let fieldsAccepted: Array<Field> = [];
+            if(name){
+                fieldsAccepted = allFields.filter(e => e.active != false && e.name == name);
+            }else{
+                fieldsAccepted = allFields.filter(e => e.active != false);
             }
-            return {...errorsCloned, ...errorsResult}
-        })
-        return errorsResult;
+            let errors = {}
+            let errorYup;
+            if(yupSchema){
+                errorYup = await errorSchema(yupSchema, fieldsAccepted, values, !fields, !!name)
+            }
+            
+            for (let field of fieldsAccepted) {
+                if(!field.name) continue
+                
+                let errorThisField = await actions.verifyErrors(field)
+                errors = {...errors, ...errorThisField}
+                
+            }
+            let errorsResult = {...errorYup, ...errors}
+            setErrors(errors => {
+                let errorsCloned = Object.assign({}, errors)
+                fieldsAccepted.forEach(field => {
+                    if(field.name) delete errorsCloned[field.name];
+                })
+                if(name && !errors[name.toString()] && !errorsResult[name.toString()]){
+                    return errors;
+                }
+                return {...errorsCloned, ...errorsResult}
+            })
+
+            return errorsResult
+        },
+        //---------------------------------------------- limpa os erros -------------------------------------
+        cleanErrors(){
+            setErrors({})
+        }
+    }), [])
+
+    return {
+        errors, 
+        verifyAllErrors: actions.verifyAllErrors, 
+        cleanErrors: actions.cleanErrors
     }
-    //---------------------------------------------- limpa os erros -------------------------------------
-    let cleanErrors = () => setErrors({})
-    return {errors, verifyAllErrors, cleanErrors}
 }
