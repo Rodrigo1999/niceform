@@ -21,10 +21,7 @@ var useMemoizedAllFields_1 = __importDefault(require("./useMemoizedAllFields"));
 function useValues(_a) {
     var fields = _a.fields, initialValues = _a.initialValues;
     var allFields = (0, useMemoizedAllFields_1.default)(fields, initialValues);
-    var _b = (0, react_1.useState)(initialValues ? Object.fromEntries(Object.entries(initialValues).map(function (_a) {
-        var key = _a[0];
-        return [key, undefined];
-    })) : {}), values = _b[0], setValues = _b[1];
+    var _b = (0, react_1.useState)({}), values = _b[0], setValues = _b[1];
     var getStates = (0, useData_1.default)({
         fields: fields,
         initialValues: initialValues,

@@ -9,7 +9,7 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
     
     let allFields = useMemoizedAllFields(fields, initialValues)
 
-    const [values, setValues] = useState(initialValues ? Object.fromEntries(Object.entries(initialValues).map(([key,]) => [key, undefined])) : {})
+    const [values, setValues] = useState({})
 
     const getStates = useData<UseValuesFunctionParams<Field> & {allFields: typeof allFields, values: typeof values}>({
         fields, 
