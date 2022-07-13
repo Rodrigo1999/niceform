@@ -6,7 +6,7 @@ export default function memoization(Component) {
 
         const _getData = useData(props)
 
-        const getData = React.useMemo(() => _getData, []) as () => object
+        const getData = React.useCallback(_getData, []) as () => object
  
         return <Component getData={getData}/>
     }

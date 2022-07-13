@@ -9,7 +9,7 @@ var useData_1 = __importDefault(require("./useData"));
 function memoization(Component) {
     return function (props) {
         var _getData = (0, useData_1.default)(props);
-        var getData = react_1.default.useMemo(function () { return _getData; }, []);
+        var getData = react_1.default.useCallback(_getData, []);
         return (0, jsx_runtime_1.jsx)(Component, { getData: getData });
     };
 }
