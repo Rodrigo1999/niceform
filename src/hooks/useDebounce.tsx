@@ -23,27 +23,41 @@ import {ParamsCreate} from '../types'
 })
  */
 export default function useDebounce(name: string, callback?: Function){
+    
     const [value, setValue] = useState('')
     const _value = useContextSelector<ParamsCreate>(state => state.valuesChain[name])
     const _changeValue = useContextSelector<ParamsCreate>(state => state.changeValue)
-    const time = useContextSelector<ParamsCreate>(state => state.allFields.find(e => e.name==name)?.timeDebounce ?? state.props.timeDebounce) || 200
+    const time = useContextSelector<ParamsCreate>(state => state.allFields.find(e => e.name==name)?.timeDebounce ?? state.props.timeDebounce) || 400
     const enableDebounce = useContextSelector<ParamsCreate>(state => state.allFields.find(e => e.name==name)?.enableDebounce ?? state.props.enableDebounce) ?? true
 
     useEffect(() => {
-        if(value !== _value) setValue(_value || '')
+        if(enableDebounce) if(value !== _value) setValue(_value || '')
     }, [_value])
 
     let onChangeDebounce = useMemo(() => debounce((evt, value, other, cb) => cb(evt, value, other), time), [])
 
-    function changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) : void
-    function changeValue(evt, value, other){
-        evt = {...evt, target: evt.target}
+    function changeValue(foo: React.ChangeEvent<HTMLInputElement> | any, bar?: any) : void
+    function changeValue(foo, bar){
         
-        if(enableDebounce) onChangeDebounce(evt, value, other, callback || _changeValue)
-        else _changeValue(evt, value, other)
+        if(typeof this == 'function') name = this().name
 
-        if(typeof evt !== 'string') setValue(evt.target.value)
-        else setValue(value)
+        const value = getValue(foo)
+       
+        if(enableDebounce) {
+            onChangeDebounce(name, value, bar, callback || _changeValue)
+            setValue(value)
+        } else {
+            _changeValue(name, value, bar)
+        }        
     }
-    return [value, changeValue] as const
+
+    return [enableDebounce ? value : _value, changeValue.bind(this)] as const
+}
+
+function getValue(foo){
+    let value
+    if((typeof foo !== 'string') && foo.constructor !== {}.constructor) value = (foo?.target as any)?.value
+    else value = foo
+
+    return value
 }

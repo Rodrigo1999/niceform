@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var react_1 = require("react");
 var utils_1 = require("../utils");
@@ -39,24 +28,35 @@ function useDebounce(name, callback) {
     var _b = (0, react_1.useState)(''), value = _b[0], setValue = _b[1];
     var _value = (0, utils_2.useContextSelector)(function (state) { return state.valuesChain[name]; });
     var _changeValue = (0, utils_2.useContextSelector)(function (state) { return state.changeValue; });
-    var time = (0, utils_2.useContextSelector)(function (state) { var _a, _b; return (_b = (_a = state.allFields.find(function (e) { return e.name == name; })) === null || _a === void 0 ? void 0 : _a.timeDebounce) !== null && _b !== void 0 ? _b : state.props.timeDebounce; }) || 200;
+    var time = (0, utils_2.useContextSelector)(function (state) { var _a, _b; return (_b = (_a = state.allFields.find(function (e) { return e.name == name; })) === null || _a === void 0 ? void 0 : _a.timeDebounce) !== null && _b !== void 0 ? _b : state.props.timeDebounce; }) || 400;
     var enableDebounce = (_a = (0, utils_2.useContextSelector)(function (state) { var _a, _b; return (_b = (_a = state.allFields.find(function (e) { return e.name == name; })) === null || _a === void 0 ? void 0 : _a.enableDebounce) !== null && _b !== void 0 ? _b : state.props.enableDebounce; })) !== null && _a !== void 0 ? _a : true;
     (0, react_1.useEffect)(function () {
-        if (value !== _value)
-            setValue(_value || '');
+        if (enableDebounce)
+            if (value !== _value)
+                setValue(_value || '');
     }, [_value]);
     var onChangeDebounce = (0, react_1.useMemo)(function () { return (0, utils_1.debounce)(function (evt, value, other, cb) { return cb(evt, value, other); }, time); }, []);
-    function changeValue(evt, value, other) {
-        evt = __assign(__assign({}, evt), { target: evt.target });
-        if (enableDebounce)
-            onChangeDebounce(evt, value, other, callback || _changeValue);
-        else
-            _changeValue(evt, value, other);
-        if (typeof evt !== 'string')
-            setValue(evt.target.value);
-        else
+    function changeValue(foo, bar) {
+        if (typeof this == 'function')
+            name = this().name;
+        var value = getValue(foo);
+        if (enableDebounce) {
+            onChangeDebounce(name, value, bar, callback || _changeValue);
             setValue(value);
+        }
+        else {
+            _changeValue(name, value, bar);
+        }
     }
-    return [value, changeValue];
+    return [enableDebounce ? value : _value, changeValue.bind(this)];
 }
 exports.default = useDebounce;
+function getValue(foo) {
+    var _a;
+    var value;
+    if ((typeof foo !== 'string') && foo.constructor !== {}.constructor)
+        value = (_a = foo === null || foo === void 0 ? void 0 : foo.target) === null || _a === void 0 ? void 0 : _a.value;
+    else
+        value = foo;
+    return value;
+}

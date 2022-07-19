@@ -1,2 +1,4 @@
-/// <reference types="react" />
-export default function memoization(Component: any): (props: any) => JSX.Element;
+import React from 'react';
+declare const FieldContext: React.Context<{}>;
+export { FieldContext };
+export default function memoization<T>(Component: any): (props: any) => JSX.Element;

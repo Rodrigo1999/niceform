@@ -11,7 +11,7 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
 
     const [values, setValues] = useState({})
 
-    const getStates = useData<UseValuesFunctionParams<Field> & {allFields: typeof allFields, values: typeof values}>({
+    const getStates = useData({
         fields, 
         initialValues, 
         values, 
@@ -32,7 +32,7 @@ export default function useValues({fields, initialValues}: UseValuesFunctionPara
                 
                 fieldsActives.forEach(field => {
                     if(field.name && field.input){
-                        _values[field.name] = field.input(_values[field.name])
+                        resolveValue(_values, field.name, field.input(getValuesByKeyRange(_values)[field.name]))
                     }
                 })
 

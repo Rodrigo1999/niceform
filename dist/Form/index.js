@@ -69,7 +69,6 @@ var useValues_1 = __importDefault(require("../hooks/useValues"));
 var useData_1 = __importDefault(require("../hooks/useData"));
 var utils_1 = require("../utils");
 var Form = function (props, ref) {
-    var _this = this;
     var _a, _b, _c, _d;
     var Context = (0, react_2.useRef)({
         errorsControl: [],
@@ -98,10 +97,19 @@ var Form = function (props, ref) {
     });
     var getStates = (0, useData_1.default)({
         fieldsFromRender: fieldsFromRender,
-        fields: props.fields,
+        fields: fields,
+        props: {
+            fields: props.fields,
+            onChangeField: props.onChangeField,
+            onBeforeSubmit: props.onBeforeSubmit,
+            onSubmit: props.onSubmit,
+            formData: props.formData,
+            clean: props.clean
+        },
         hookValues: hookValues,
         hookErrors: hookErrors,
-        isSubmited: isSubmited
+        isSubmited: isSubmited,
+        getFieldComponent: getFieldComponent
     });
     (0, react_2.useEffect)(function () {
         if (lastChangedField.current[0] && isSubmited.current) {
@@ -127,68 +135,78 @@ var Form = function (props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value;
             }
-            var _a = getStates(), fieldsFromRender = _a.fieldsFromRender, fields = _a.fields, hookValues = _a.hookValues;
-            var fd = (0, utils_1.getField)((fields || []).concat(fieldsFromRender), _name, false);
+            var _a = getStates(), fieldsFromRender = _a.fieldsFromRender, props = _a.props, hookValues = _a.hookValues;
+            var fd = (0, utils_1.getField)(((props === null || props === void 0 ? void 0 : props.fields) || []).concat(fieldsFromRender), _name, false);
             hookValues.changeValue(_name, _value, function (field, value) {
                 var _a;
                 lastChangedField.current = [_name, _value];
                 (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
             });
+        },
+        //---------------------------------------------- submição de formulário -------------------------------------
+        submit: function (evt) {
+            var _a, _b, _c, _d, _e;
+            return __awaiter(this, void 0, void 0, function () {
+                var _f, isSubmited, hookErrors, hookValues, _fields, props, fieldsFromRender, fields, errors, valuesCloned, field;
+                return __generator(this, function (_g) {
+                    switch (_g.label) {
+                        case 0:
+                            (_a = evt === null || evt === void 0 ? void 0 : evt.preventDefault) === null || _a === void 0 ? void 0 : _a.call(evt);
+                            _f = getStates(), isSubmited = _f.isSubmited, hookErrors = _f.hookErrors, hookValues = _f.hookValues, _fields = _f.fields, props = _f.props, fieldsFromRender = _f.fieldsFromRender;
+                            fields = _fields === null || _fields === void 0 ? void 0 : _fields.concat(fieldsFromRender);
+                            isSubmited.current = true;
+                            return [4 /*yield*/, hookErrors.verifyAllErrors()];
+                        case 1:
+                            errors = _g.sent();
+                            valuesCloned = (0, utils_1.clone)(hookValues.values);
+                            if (fields) {
+                                field = (0, utils_1.getFlatFields)(fields).filter(function (field) { return field.active !== false; });
+                                field.filter(function (e) { return e.output && e.visible !== false; }).forEach(function (e) {
+                                    if (e.name)
+                                        (0, utils_1.resolveValue)(valuesCloned, e.name, e.output(hookValues.valuesChain[e.name]));
+                                });
+                            }
+                            (_b = props.onBeforeSubmit) === null || _b === void 0 ? void 0 : _b.call(props, valuesCloned);
+                            if (!!Object.keys(errors).length) {
+                                (_d = (_c = Context.current).onError) === null || _d === void 0 ? void 0 : _d.call(_c, errors);
+                                return [2 /*return*/, false];
+                            }
+                            else {
+                                if (props.formData)
+                                    valuesCloned = (0, utils_1.objectToForm)(valuesCloned);
+                                (_e = props.onSubmit) === null || _e === void 0 ? void 0 : _e.call(props, valuesCloned);
+                                if (props.clean)
+                                    actions.clean();
+                                return [2 /*return*/, true];
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        },
+        // --------------------------------------- renderização isolada de um determinado componente------------------------------
+        renderField: function (obj) {
+            var getFieldComponent = getStates().getFieldComponent;
+            var comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj);
+            comp = __assign({}, comp);
+            Object.defineProperty(comp, 'constructorObject', {
+                enumerable: false,
+                configurable: true,
+                value: obj
+            });
+            Object.defineProperty(comp, 'isRenderField', {
+                enumerable: false,
+                configurable: true,
+                value: true
+            });
+            return comp;
+        },
+        getDataField: function (name) {
+            var _a = getStates(), fields = _a.fields, fieldsFromRender = _a.fieldsFromRender;
+            var field = (0, utils_1.getField)((fields === null || fields === void 0 ? void 0 : fields.concat(fieldsFromRender)) || [], name);
+            return field || {};
         }
     }); }, []);
-    //---------------------------------------------- submição de formulário -------------------------------------
-    var submit = function (evt) { return __awaiter(_this, void 0, void 0, function () {
-        var errors, valuesCloned, field;
-        var _a, _b, _c, _d, _e;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
-                case 0:
-                    (_a = evt === null || evt === void 0 ? void 0 : evt.preventDefault) === null || _a === void 0 ? void 0 : _a.call(evt);
-                    isSubmited.current = true;
-                    return [4 /*yield*/, hookErrors.verifyAllErrors()];
-                case 1:
-                    errors = _f.sent();
-                    valuesCloned = (0, utils_1.clone)(hookValues.values);
-                    if (fields) {
-                        field = (0, utils_1.getFlatFields)(fields).filter(function (field) { return field.active !== false; });
-                        field.filter(function (e) { return e.output && e.visible !== false; }).forEach(function (e) {
-                            if (e.name)
-                                valuesCloned[e.name] = e.output(hookValues.values[e.name]);
-                        });
-                    }
-                    (_b = props.onBeforeSubmit) === null || _b === void 0 ? void 0 : _b.call(props, valuesCloned);
-                    if (!!Object.keys(errors).length) {
-                        (_d = (_c = Context.current).onError) === null || _d === void 0 ? void 0 : _d.call(_c, errors);
-                        return [2 /*return*/, false];
-                    }
-                    else {
-                        if (props.formData)
-                            valuesCloned = (0, utils_1.objectToForm)(valuesCloned);
-                        (_e = props.onSubmit) === null || _e === void 0 ? void 0 : _e.call(props, valuesCloned);
-                        if (props.clean)
-                            actions.clean();
-                        return [2 /*return*/, true];
-                    }
-                    return [2 /*return*/];
-            }
-        });
-    }); };
-    // --------------------------------------- renderização isolada de um determinado componente------------------------------
-    function renderField(obj) {
-        var comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj);
-        comp = __assign({}, comp);
-        Object.defineProperty(comp, 'constructorObject', {
-            enumerable: false,
-            configurable: true,
-            value: obj
-        });
-        Object.defineProperty(comp, 'isRenderField', {
-            enumerable: false,
-            configurable: true,
-            value: true
-        });
-        return comp;
-    }
     var setFieldsFromRenderDebounce = (0, react_2.useMemo)(function () { return (0, utils_1.debounce)(function (fields, fieldsFromRender) {
         var filter = function (data) { return typeof data[1] !== 'function'; };
         var formatFieldsToCompare = function (fields) { return fields.map(function (field) { return (0, utils_1.filterProperty)(field || {}, filter); }); };
@@ -208,10 +226,10 @@ var Form = function (props, ref) {
         valuesChain: hookValues.valuesChain,
         verifyAllErrors: hookErrors.verifyAllErrors,
         changeValue: actions.changeValue,
-        submit: submit,
+        submit: actions.submit,
         clean: actions.clean,
         allFields: (fields ? (0, utils_1.getFlatFields)(fields) : []).concat(fieldsFromRender),
-        renderField: renderField
+        renderField: actions.renderField
     };
     var localContext = (this === null || this === void 0 ? void 0 : this(argumentsToContexts)) || {};
     var propsContext = ((_c = props.create) === null || _c === void 0 ? void 0 : _c.call(props, argumentsToContexts)) || {};
@@ -263,7 +281,7 @@ var Form = function (props, ref) {
         }));
     };
     //---------------------------------------------- COMPONENTE -------------------------------------
-    return ((0, jsx_runtime_1.jsx)(utils_1.Context.Provider, __assign({ value: argumentsToContexts }, { children: (0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_d = props.grid) === null || _d === void 0 ? void 0 : _d.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
+    return ((0, jsx_runtime_1.jsx)(utils_1.Context.Provider, __assign({ value: __assign(__assign({}, argumentsToContexts), { getDataField: actions.getDataField }) }, { children: (0, jsx_runtime_1.jsx)("form", __assign({ onSubmit: actions.submit, ref: form }, { children: props.children ? connectChildren(props.children(argumentsToContexts)) : ((0, jsx_runtime_1.jsxs)(jsx_runtime_1.Fragment, { children: [(0, jsx_runtime_1.jsx)(Context.current.ComponentWrap, __assign({}, configRow, (_d = props.grid) === null || _d === void 0 ? void 0 : _d.row, { children: render(fields) })), !props.hiddenFooter && (props.beforeButtonElement || props.onSubmit || props.afterButtonElement) &&
                         (0, jsx_runtime_1.jsxs)(Context.current.ComponentWrap, __assign({ row: true, alignItems: 'flex-start', justify: 'flex-end', className: 'content-buttons', style: { marginTop: 20 } }, Context.current.footerProps, { children: [props.beforeButtonElement, props.onSubmit && Context.current.button, props.afterButtonElement] }))] })) })) })));
 };
 var create = function (data) { return (0, react_2.forwardRef)(Form.bind(data)); };

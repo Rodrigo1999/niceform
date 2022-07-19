@@ -38,7 +38,7 @@ function useValues(_a) {
                 var valuesCopied = Object.assign({}, values);
                 fieldsActives.forEach(function (field) {
                     if (field.name && field.input) {
-                        _values[field.name] = field.input(_values[field.name]);
+                        (0, utils_1.resolveValue)(_values, field.name, field.input((0, utils_1.getValuesByKeyRange)(_values)[field.name]));
                     }
                 });
                 (0, utils_1.resolveInitialValue)(_values, valuesCopied);

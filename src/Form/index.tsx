@@ -14,7 +14,8 @@ import {
     findComponentByRenderFieldOnTreeDom,
     Context as ContextForm,
     clone,
-    getField 
+    getField ,
+    resolveValue
 } from '../utils';
 
 let Form = function (props: Props, ref) {
@@ -49,18 +50,21 @@ let Form = function (props: Props, ref) {
         yupSchema: props.validationSchema
     });
 
-    const getStates = useData<{
-        fieldsFromRender: typeof fieldsFromRender,
-        fields: typeof props.fields,
-        hookValues: typeof hookValues,
-        hookErrors: typeof hookErrors,
-        isSubmited: typeof isSubmited,
-    }>({
+    const getStates = useData({
         fieldsFromRender, 
-        fields: props.fields, 
+        fields, 
+        props: {
+            fields: props.fields,
+            onChangeField: props.onChangeField,
+            onBeforeSubmit: props.onBeforeSubmit,
+            onSubmit: props.onSubmit,
+            formData: props.formData,
+            clean: props.clean
+        },
         hookValues,
         hookErrors,
-        isSubmited
+        isSubmited,
+        getFieldComponent
     })
    
     useEffect(() => {
@@ -73,11 +77,10 @@ let Form = function (props: Props, ref) {
     const actions = useMemo(() => ({
         clean() {
             const {hookValues, hookErrors, isSubmited} = getStates()
-            
+
             hookErrors.cleanErrors();
             hookValues.cleanValues();
             isSubmited.current = false
-            
         },
         changeValue(evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) {
             let _name = '';
@@ -90,67 +93,74 @@ let Form = function (props: Props, ref) {
                 _value = evt.target.value
             }
             
-            const {fieldsFromRender, fields, hookValues} = getStates()
+            const {fieldsFromRender, props, hookValues} = getStates()
              
-            const fd = getField((fields || []).concat(fieldsFromRender), _name, false)
+            const fd = getField((props?.fields || []).concat(fieldsFromRender), _name, false)
 
             hookValues.changeValue(_name, _value, function (field, value) {
                 lastChangedField.current = [_name, _value]
                 props.onChangeField?.(field || fd, value, others)
             });
+        },
+        //---------------------------------------------- submição de formulário -------------------------------------
+        async submit(evt){
+            evt?.preventDefault?.();
+            const {isSubmited, hookErrors, hookValues, fields:_fields, props, fieldsFromRender} = getStates()
+
+            const fields = _fields?.concat(fieldsFromRender)
+
+            isSubmited.current = true;
+            let errors = await hookErrors.verifyAllErrors()
+            let valuesCloned = clone(hookValues.values)
+    
+            if (fields) {
+                let field: Array<Field> = getFlatFields(fields).filter(field => field.active !== false);
+                field.filter(e => e.output && e.visible !== false).forEach(e => {
+                    if(e.name) resolveValue(valuesCloned, e.name, e.output!(hookValues.valuesChain[e.name]))
+                });
+            }
+    
+            props.onBeforeSubmit?.(valuesCloned);
+            if (!!Object.keys(errors).length) {
+                Context.current.onError?.(errors);
+                return false;
+            } else {
+                
+                if (props.formData) valuesCloned = objectToForm(valuesCloned);
+    
+                props.onSubmit?.(valuesCloned);
+                if (props.clean) actions.clean()
+    
+                return true;
+            }
+        },
+        // --------------------------------------- renderização isolada de um determinado componente------------------------------
+        renderField(obj: Field){
+            const {getFieldComponent} = getStates()
+            let comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj)
+            
+            comp = {...comp }
+    
+            Object.defineProperty(comp, 'constructorObject', {
+                enumerable: false,
+                configurable: true,
+                value: obj
+            })
+            Object.defineProperty(comp, 'isRenderField', {
+                enumerable: false,
+                configurable: true,
+                value: true
+            })
+            
+            return comp
+        },
+        getDataField(name: string){
+            const {fields, fieldsFromRender} = getStates()
+            const field = getField(fields?.concat(fieldsFromRender) || [], name)
+            return field || {}
         }
     }), [])
-
-    //---------------------------------------------- submição de formulário -------------------------------------
-    const submit = async (evt) => {
-        evt?.preventDefault?.();
-        isSubmited.current = true;
-        let errors = await hookErrors.verifyAllErrors()
-        let valuesCloned = clone(hookValues.values)
-
-        if (fields) {
-            let field: Array<Field> = getFlatFields(fields).filter(field => field.active !== false);
-            field.filter(e => e.output && e.visible !== false).forEach(e => {
-                if (e.name) valuesCloned[e.name] = e.output!(hookValues.values[e.name]);
-            });
-        }
-
-        props.onBeforeSubmit?.(valuesCloned);
-        if (!!Object.keys(errors).length) {
-            Context.current.onError?.(errors);
-            return false;
-        } else {
-            
-            if (props.formData) valuesCloned = objectToForm(valuesCloned);
-
-            props.onSubmit?.(valuesCloned);
-            if (props.clean) actions.clean()
-
-            return true;
-        }
-    }
-
-    // --------------------------------------- renderização isolada de um determinado componente------------------------------
-
-    function renderField(obj: Field){
-        let comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj)
-        
-        comp = {...comp }
-
-        Object.defineProperty(comp, 'constructorObject', {
-            enumerable: false,
-            configurable: true,
-            value: obj
-        })
-        Object.defineProperty(comp, 'isRenderField', {
-            enumerable: false,
-            configurable: true,
-            value: true
-        })
-        
-        return comp
-    }
-
+    
     const setFieldsFromRenderDebounce = useMemo(() => debounce(function(fields, fieldsFromRender){
         const filter = data => typeof data[1] !== 'function'
 
@@ -175,10 +185,10 @@ let Form = function (props: Props, ref) {
         valuesChain: hookValues.valuesChain,
         verifyAllErrors: hookErrors.verifyAllErrors,
         changeValue: actions.changeValue,
-        submit,
+        submit: actions.submit,
         clean: actions.clean,
         allFields: (fields ? getFlatFields(fields) : []).concat(fieldsFromRender),
-        renderField
+        renderField: actions.renderField
     }
 
     const localContext: Create = this?.(argumentsToContexts) || {};
@@ -270,8 +280,8 @@ let Form = function (props: Props, ref) {
     
     //---------------------------------------------- COMPONENTE -------------------------------------
     return (
-        <ContextForm.Provider value={argumentsToContexts}>
-            <form onSubmit={submit} ref={form}>
+        <ContextForm.Provider value={{...argumentsToContexts, getDataField: actions.getDataField}}>
+            <form onSubmit={actions.submit} ref={form}>
                 {props.children ? connectChildren(props.children(argumentsToContexts)) : (
                     <>
                         <Context.current.ComponentWrap

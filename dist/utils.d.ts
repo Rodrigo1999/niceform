@@ -4,7 +4,7 @@ export * from './useContextSelector';
 export declare function objectToForm(obj: Object, form?: any, level?: any): any;
 export declare function debounce(fn: any, ms: any): (...args: any[]) => void;
 export declare function getFlatFields(fields: Array<Field>): Array<Field>;
-export declare function getField(fields: Array<Field>, name: string, active: Boolean): Field | undefined;
+export declare function getField(fields: Array<Field>, name: string, active?: Boolean): Field | undefined;
 export declare function resolveValue(obj: Object, prop: String, val?: any, valueIsUndefined?: Boolean): Object | undefined;
 export declare function getValuesByKeyRange(values: Object): any;
 export declare function resolveInitialValue(values: Object, valuesCloned: Object): void;

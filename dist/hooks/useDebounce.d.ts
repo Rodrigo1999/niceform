@@ -19,4 +19,4 @@ import React from 'react';
     )
 })
  */
-export default function useDebounce(name: string, callback?: Function): readonly [string, (evt: React.ChangeEvent<HTMLInputElement> | string, value?: any, others?: any) => void];
+export default function useDebounce(name: string, callback?: Function): readonly [any, (foo: React.ChangeEvent<HTMLInputElement> | any, bar?: any) => void];

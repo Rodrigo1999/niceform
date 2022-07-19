@@ -47,7 +47,7 @@ export function getFlatFields(fields: Array<Field>): Array<Field> {
     return fields.flatMap((field) => field.fields ? getFlatFields(field.fields) : field);
 }
 //---------------------------------------------- retorna um campo específico ---------------------------
-export function getField(fields: Array<Field>, name: string, active: Boolean): Field | undefined {
+export function getField(fields: Array<Field>, name: string, active?: Boolean): Field | undefined {
     let allFields = getFlatFields(fields);
     if (active !== undefined) allFields = allFields.filter(e => e.active != active);
     return allFields.find(e => e.name == name);
