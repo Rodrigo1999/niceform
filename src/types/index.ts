@@ -1,5 +1,7 @@
 import { ReturnUseErrorsFunctionParams, errorsControl } from './hooks';
+import type {Breakpoints} from 'dynamic-react-grid'
 
+export {Breakpoints}
 export type ValueKeys = {
     [key: string]: any
 }
@@ -62,17 +64,6 @@ interface ContentParams {
      * Renders a field based on the passed json object
      */
     renderField: (obj: Field) => any
-}
-interface Breakpoints {
-    xs?: number,
-    'xs-m'?: number,
-    sm?: number,
-    'sm-m'?: number,
-    md?: number,
-    'md-m'?: number,
-    lg?: number,
-    'lg-m'?: number,
-    xl?: number,
 }
 export interface FieldLite extends Breakpoints {
     /**
