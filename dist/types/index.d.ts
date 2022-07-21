@@ -282,7 +282,7 @@ export interface FieldLite extends Breakpoints {
             ]}
         />
      */
-    wrap?: (children: HTMLElement | JSX.Element) => HTMLElement | JSX.Element;
+    wrap?: (children: JSX.Element) => JSX.Element;
     /**
      * I insert any content to be rendered inside the form if the value of the `type` attribute mentioned here is equal to `element`
      * @example
@@ -459,7 +459,7 @@ export interface Create {
             )
      * }))
      */
-    button?: HTMLElement | JSX.Element;
+    button?: JSX.Element;
     /**
      * Step anything, it will be inserted in the tag considered as footer of the form
      */
