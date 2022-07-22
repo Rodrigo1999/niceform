@@ -693,7 +693,7 @@ export interface Props extends Row {
      *      onChangeField={(field, value, any) => console.log(field, value, any)}
      * />
      */
-    onChangeField?: (field: Object, value: any, other: any) => void,
+    onChangeField?: (field: Field, value: any, other: any) => void,
     /**
      * Called every time I try to submit the form, it is called even if a field is invalid
      * @example
