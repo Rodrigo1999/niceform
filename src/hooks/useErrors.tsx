@@ -20,7 +20,7 @@ export default function useErrors({fields, getErrorsControl, yupSchema, values}:
 
     const actions = useMemo(() => ({
         //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
-        async verifyErrors(field){
+        async verifyErrors(field, _value){
             const {getErrorsControl, values, allFields} = getStates()
                 
             const errors = {};
@@ -31,7 +31,7 @@ export default function useErrors({fields, getErrorsControl, yupSchema, values}:
                 for (let callbackCustomError of errorsControl) {
                     if(!field.name) continue
                 
-                    let value = values[field.name]
+                    let value = _value !== undefined ? _value : values[field.name]
                     
                     let err = await callbackCustomError({field, value, validateSchema: (schema) => validateSchemaOnlyField(schema, value || '')});
                     if(err) errors[field.name] = err;
@@ -39,7 +39,7 @@ export default function useErrors({fields, getErrorsControl, yupSchema, values}:
             }
 
             if(field.error){
-                const value = values[field.name]
+                const value = _value !== undefined ? _value : values[field.name]
                 const err = await field.error({
                     fields: allFields, 
                     field, 
@@ -52,7 +52,7 @@ export default function useErrors({fields, getErrorsControl, yupSchema, values}:
             return errors
         },
         //---------------------------------------------- salva no estado e retorna os erros encontrados para todos os campos -------------------------------------
-        async verifyAllErrors(name?: String) {
+        async verifyAllErrors(name?: String, value?: any) {
             const {fields, yupSchema, values, allFields} = getStates()
                 
             let fieldsAccepted: Array<Field> = [];
@@ -70,7 +70,7 @@ export default function useErrors({fields, getErrorsControl, yupSchema, values}:
             for (let field of fieldsAccepted) {
                 if(!field.name) continue
                 
-                let errorThisField = await actions.verifyErrors(field)
+                let errorThisField = await actions.verifyErrors(field, value)
                 errors = {...errors, ...errorThisField}
                 
             }

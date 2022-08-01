@@ -269,7 +269,7 @@ export interface FieldLite extends Breakpoints {
      * <Form
             fields={[
                 {
-                    wrap: (children) => (
+                    wrap: (children, args) => (
                         <div style={{padding: 20, backgroundColor: 'blue'}}>
                             {children}
                         </div>
@@ -282,7 +282,7 @@ export interface FieldLite extends Breakpoints {
             ]}
         />
      */
-    wrap?: (children: JSX.Element) => JSX.Element,
+    wrap?: (children: JSX.Element, args: ContentParams) => JSX.Element | null,
     /**
      * I insert any content to be rendered inside the form if the value of the `type` attribute mentioned here is equal to `element`
      * @example
@@ -300,7 +300,7 @@ export interface FieldLite extends Breakpoints {
             ]}
         />
      */
-    content?: (Object: ContentParams) => any,
+    content?: (args: ContentParams) => any,
     /**
      * With this callback we can change the form input data
      * @example
@@ -465,7 +465,7 @@ export interface Create {
     /**
      * Step anything, it will be inserted in the tag considered as footer of the form
      */
-    footerProps?: Object,
+    footerProps?: {[key:string]: any},
     context?: Omit<Props, 'fields' | 'staticFields' | 'onSubmit' | 'initialValues' | 'onChangeField' | 'onBeforeSubmit' | 'validationSchema' | 'create' | 'children'>
 }
 export interface ParamsCreate {
@@ -480,15 +480,15 @@ export interface ParamsCreate {
     /**
      * Returns all error postings regarding form fields
      */
-    errors: Object,
+    errors: {[key:string]: any},
     /**
      * Returns form values
      */
-    values: Object,
+    values: {[key:string]: any},
     /**
      * Returns form values range of an array or object
     */
-    valuesChain: Object,
+    valuesChain: {[key:string]: any},
     /**
      * With this function we can change the value of a certain form field
      */
@@ -614,7 +614,7 @@ export interface Props extends Row {
      *      onSubmit={values => console.log(values)} // {name: 'Rodrigo', lastname: '....'}
      *   />
      */
-    fixedValues?: Object,
+    fixedValues?: {[key:string]: any},
     /**
      * Static fields, they don't appear on the form, but dynamic-react-form considers it as any field
      * @example
@@ -685,7 +685,7 @@ export interface Props extends Row {
      *      }}
      * />
      */
-    initialValues?: Object,
+    initialValues?: {[key:string]: any},
     /**
      * Called every time the value of a given field changes
      * @example

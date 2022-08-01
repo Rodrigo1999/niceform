@@ -368,10 +368,10 @@ diff-sequences@^26.6.2:
   resolved "https://registry.yarnpkg.com/diff-sequences/-/diff-sequences-26.6.2.tgz#48ba99157de1923412eed41db6b6d4aa9ca7c0b1"
   integrity sha512-Mv/TDa3nZ9sbc5soK+OoA74BsS3mL37yixCvUAQkiuA4Wz6YtwP/K47n2rv2ovzHZvoiQeA5FTQOschKkEwB0Q==
 
-dynamic-react-grid@^0.1.7:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/dynamic-react-grid/-/dynamic-react-grid-0.1.7.tgz#a43b8bf3d251d0bb2bdd61d95420f8dc089e0b1c"
-  integrity sha512-cUH72hs8KohuxEiuMj5rgq80l9OAeTD+K/BXDenR6INRnhYy/vStWuuvSYNzeCYPXkQpNFvVT2PEeoKNHIxM9A==
+dynamic-react-grid@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/dynamic-react-grid/-/dynamic-react-grid-0.1.9.tgz#30c98ac29f2645a19b7f216955afa6e3d6cf4c70"
+  integrity sha512-CcV0mD2Rmr/E3HKdgi+jO3qTOiZi8CXGWq62flzfaoeYVamE6d3LLcEPV/B26vwdDC8yjkqTRFER5IMc1KzBuw==
   dependencies:
     "@emotion/react" "^11.9.3"
     "@emotion/styled" "^11.9.3"

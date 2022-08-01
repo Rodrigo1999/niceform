@@ -80,7 +80,6 @@ var Form = function (props, ref) {
         context: {}
     });
     props = __assign(__assign({}, Context.current.context), props);
-    var lastChangedField = (0, react_2.useRef)([]);
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
     var _e = (0, react_2.useState)([]), fieldsFromRender = _e[0], setFieldsFromRender = _e[1];
@@ -111,11 +110,6 @@ var Form = function (props, ref) {
         isSubmited: isSubmited,
         getFieldComponent: getFieldComponent
     });
-    (0, react_2.useEffect)(function () {
-        if (lastChangedField.current[0] && isSubmited.current) {
-            hookErrors.verifyAllErrors(lastChangedField.current[0]);
-        }
-    }, [hookValues.values, isSubmited]);
     //---------------------------------------------- ações básicas -------------------------------------
     var actions = (0, react_2.useMemo)(function () { return ({
         clean: function () {
@@ -135,11 +129,12 @@ var Form = function (props, ref) {
                 _name = evt.target.name;
                 _value = evt.target.value;
             }
-            var _a = getStates(), fieldsFromRender = _a.fieldsFromRender, props = _a.props, hookValues = _a.hookValues;
+            var _a = getStates(), fieldsFromRender = _a.fieldsFromRender, props = _a.props, hookValues = _a.hookValues, isSubmited = _a.isSubmited, hookErrors = _a.hookErrors;
             var fd = (0, utils_1.getField)(((props === null || props === void 0 ? void 0 : props.fields) || []).concat(fieldsFromRender), _name, false);
             hookValues.changeValue(_name, _value, function (field, value) {
                 var _a;
-                lastChangedField.current = [_name, _value];
+                if (isSubmited.current)
+                    hookErrors.verifyAllErrors(_name, _value);
                 (_a = props.onChangeField) === null || _a === void 0 ? void 0 : _a.call(props, field || fd, value, others);
             });
         },
@@ -187,7 +182,7 @@ var Form = function (props, ref) {
         // --------------------------------------- renderização isolada de um determinado componente------------------------------
         renderField: function (obj) {
             var getFieldComponent = getStates().getFieldComponent;
-            var comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj);
+            var comp = getFieldComponent(obj);
             comp = __assign({}, comp);
             Object.defineProperty(comp, 'constructorObject', {
                 enumerable: false,
@@ -273,7 +268,7 @@ var Form = function (props, ref) {
         return (fields.filter(function (e) { return e.visible !== false; }).map(function (field, index) {
             var _a, _b, _c, _d, _e, _f, _g;
             var componentBaseField = _getComponentBase(Context.current.components, field);
-            var fieldComponent = field.wrap ? field.wrap(getFieldComponent(field)) : getFieldComponent(field);
+            var fieldComponent = field.wrap ? field.wrap(getFieldComponent(field), argumentsToContexts) : getFieldComponent(field);
             return !props.children ? ((0, react_1.createElement)(Context.current.ComponentWrap, __assign({}, (!!field.fields ? configRow : {}), { xs: field.xs, "xs-m": field['xs-m'], sm: field.sm, "sm-m": field['sm-m'], md: field.md, "md-m": field['md-m'], lg: field.lg, "lg-m": field['lg-m'], xl: field.xl, "xl-m": field['xl-m'], order: field.order, key: field.name || field.key || index }, componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps, (_a = props.grid) === null || _a === void 0 ? void 0 : _a.col, field.contentProps, { style: __assign(__assign(__assign({}, (_c = (_b = props.grid) === null || _b === void 0 ? void 0 : _b.col) === null || _c === void 0 ? void 0 : _c.style), (_d = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _d === void 0 ? void 0 : _d.style), (_e = field.contentProps) === null || _e === void 0 ? void 0 : _e.style), className: ['form-field', (_f = componentBaseField === null || componentBaseField === void 0 ? void 0 : componentBaseField.contentProps) === null || _f === void 0 ? void 0 : _f.className, (_g = field.contentProps) === null || _g === void 0 ? void 0 : _g.className].filter(Boolean).join(' ') }),
                 field.beforeContent,
                 fieldComponent,

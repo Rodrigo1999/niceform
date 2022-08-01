@@ -31,7 +31,6 @@ let Form = function (props: Props, ref) {
     });
 
     props = { ...Context.current.context, ...props }
-    const lastChangedField = useRef([] as ([name: any, value: any] | []))
     const isSubmited = useRef(false)
     const form = useRef<HTMLFormElement>(null);
     const [fieldsFromRender, setFieldsFromRender] = useState<Array<Field>>([]);
@@ -67,12 +66,6 @@ let Form = function (props: Props, ref) {
         getFieldComponent
     })
    
-    useEffect(() => {
-        if (lastChangedField.current[0] && isSubmited.current) {
-            hookErrors.verifyAllErrors(lastChangedField.current[0])
-        }
-    }, [hookValues.values, isSubmited])
-
     //---------------------------------------------- ações básicas -------------------------------------
     const actions = useMemo(() => ({
         clean() {
@@ -93,12 +86,12 @@ let Form = function (props: Props, ref) {
                 _value = evt.target.value
             }
             
-            const {fieldsFromRender, props, hookValues} = getStates()
+            const {fieldsFromRender, props, hookValues, isSubmited, hookErrors} = getStates()
              
             const fd = getField((props?.fields || []).concat(fieldsFromRender), _name, false)
 
             hookValues.changeValue(_name, _value, function (field, value) {
-                lastChangedField.current = [_name, _value]
+                if(isSubmited.current) hookErrors.verifyAllErrors(_name, _value)
                 props.onChangeField?.(field || fd, value, others)
             });
         },
@@ -137,7 +130,7 @@ let Form = function (props: Props, ref) {
         // --------------------------------------- renderização isolada de um determinado componente------------------------------
         renderField(obj: Field){
             const {getFieldComponent} = getStates()
-            let comp = obj.wrap ? obj.wrap(getFieldComponent(obj)) : getFieldComponent(obj)
+            let comp = getFieldComponent(obj)
             
             comp = {...comp }
     
@@ -242,7 +235,7 @@ let Form = function (props: Props, ref) {
         return (
             fields.filter(e => e.visible !== false).map((field, index) => {
                 let componentBaseField = _getComponentBase(Context.current.components, field);
-                let fieldComponent = field.wrap ? field.wrap(getFieldComponent(field)) : getFieldComponent(field)
+                let fieldComponent = field.wrap ? field.wrap(getFieldComponent(field), argumentsToContexts) : getFieldComponent(field)
 
                 return !props.children ? (
                     <Context.current.ComponentWrap

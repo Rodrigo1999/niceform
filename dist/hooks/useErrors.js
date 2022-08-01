@@ -67,7 +67,7 @@ function useErrors(_a) {
     });
     var actions = (0, react_1.useMemo)(function () { return ({
         //---------------------------------------------- Retorna os erros encontrados em um campo -------------------------------------
-        verifyErrors: function (field) {
+        verifyErrors: function (field, _value) {
             return __awaiter(this, void 0, void 0, function () {
                 var _a, getErrorsControl, values, allFields, errors, errorsControl, _loop_1, _i, errorsControl_1, callbackCustomError, value_1, err;
                 return __generator(this, function (_b) {
@@ -84,7 +84,7 @@ function useErrors(_a) {
                                         case 0:
                                             if (!field.name)
                                                 return [2 /*return*/, "continue"];
-                                            value = values[field.name];
+                                            value = _value !== undefined ? _value : values[field.name];
                                             return [4 /*yield*/, callbackCustomError({ field: field, value: value, validateSchema: function (schema) { return (0, utils_1.validateSchemaOnlyField)(schema, value || ''); } })];
                                         case 1:
                                             err = _c.sent();
@@ -108,7 +108,7 @@ function useErrors(_a) {
                             return [3 /*break*/, 1];
                         case 4:
                             if (!field.error) return [3 /*break*/, 6];
-                            value_1 = values[field.name];
+                            value_1 = _value !== undefined ? _value : values[field.name];
                             return [4 /*yield*/, field.error({
                                     fields: allFields,
                                     field: field,
@@ -127,7 +127,7 @@ function useErrors(_a) {
             });
         },
         //---------------------------------------------- salva no estado e retorna os erros encontrados para todos os campos -------------------------------------
-        verifyAllErrors: function (name) {
+        verifyAllErrors: function (name, value) {
             return __awaiter(this, void 0, void 0, function () {
                 var _a, fields, yupSchema, values, allFields, fieldsAccepted, errors, errorYup, _i, fieldsAccepted_1, field, errorThisField, errorsResult;
                 return __generator(this, function (_b) {
@@ -155,7 +155,7 @@ function useErrors(_a) {
                             field = fieldsAccepted_1[_i];
                             if (!field.name)
                                 return [3 /*break*/, 5];
-                            return [4 /*yield*/, actions.verifyErrors(field)];
+                            return [4 /*yield*/, actions.verifyErrors(field, value)];
                         case 4:
                             errorThisField = _b.sent();
                             errors = __assign(__assign({}, errors), errorThisField);

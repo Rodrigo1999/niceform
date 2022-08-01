@@ -24,7 +24,7 @@ export interface useErrorsFunctionParams<Fields> {
 }
 export interface ReturnUseErrorsFunctionParams {
     errors: Object;
-    verifyAllErrors: (name?: string) => Object;
+    verifyAllErrors: (name?: string, value?: any) => Object;
     cleanErrors: Function;
 }
 export {};
