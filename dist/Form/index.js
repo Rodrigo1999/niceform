@@ -79,10 +79,11 @@ var Form = function (props, ref) {
         footerProps: {},
         context: {}
     });
-    props = __assign(__assign({}, Context.current.context), props);
+    var _e = (0, react_2.useState)(Context.current.context), ctx = _e[0], setCtx = _e[1];
     var isSubmited = (0, react_2.useRef)(false);
     var form = (0, react_2.useRef)(null);
-    var _e = (0, react_2.useState)([]), fieldsFromRender = _e[0], setFieldsFromRender = _e[1];
+    var _f = (0, react_2.useState)([]), fieldsFromRender = _f[0], setFieldsFromRender = _f[1];
+    props = __assign(__assign({}, ctx), props);
     var fields = (_b = (_a = props.fields) === null || _a === void 0 ? void 0 : _a.concat) === null || _b === void 0 ? void 0 : _b.call(_a, props.staticFields || []);
     var hookValues = (0, useValues_1.default)({
         fields: (fields || []).concat(fieldsFromRender),
@@ -94,6 +95,10 @@ var Form = function (props, ref) {
         getErrorsControl: function () { return Context.current.errorsControl || []; },
         yupSchema: props.validationSchema
     });
+    (0, react_2.useEffect)(function () {
+        if (!(0, utils_1.dequal)(Context.current.context, ctx))
+            setCtx(Context.current.context);
+    }, [Context.current.context]);
     var getStates = (0, useData_1.default)({
         fieldsFromRender: fieldsFromRender,
         fields: fields,
@@ -243,9 +248,9 @@ var Form = function (props, ref) {
     //---------------------------------------------- controle de linhas e colunas -------------------------------------
     var configRow = {
         row: true,
-        alignItems: props.alignItems || 'flex-start',
+        align: props.align || 'flex-start',
         justify: props.justify,
-        align: props.align,
+        alignContent: props.alignContent,
         direction: props.direction,
         spacing: props.spacing || 2,
     };

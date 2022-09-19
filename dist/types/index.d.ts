@@ -1,6 +1,6 @@
 /// <reference types="react" />
 import { ReturnUseErrorsFunctionParams, errorsControl } from './hooks';
-import type { Breakpoints } from 'dynamic-react-grid';
+import type { Breakpoints, Props as DrgProps } from 'dynamic-react-grid';
 export { Breakpoints };
 export declare type ValueKeys = {
     [key: string]: any;
@@ -516,65 +516,7 @@ export interface ParamsCreate {
      */
     renderField: (obj: Field) => any;
 }
-interface Row {
-    /**
-     * flex-wrap values
-     * @example
-     * <Form
-     *      wrap='nowrap'
-        />
-     */
-    wrap?: 'nowrap' | 'wrap' | 'wrap-reverse' | 'inherit' | 'initial' | 'unset';
-    /**
-    * flex-direction values
-    * @example
-    * <Form
-    *      direction='column'
-       />
-    */
-    direction?: 'row' | 'row-reverse' | 'column' | 'column-reverse' | 'inherit' | 'initial' | 'unset';
-    /**
-    * justify-content values
-    * @example
-    * <Form
-    *      justify='flex-start'
-       />
-    */
-    justify?: 'center' | 'flex-start' | 'flex-end' | 'space-between' | 'space-around' | 'inherit' | 'initial' | 'unset';
-    /**
-    * align-content values
-    * @example
-    * <Form
-    *      align='space-between'
-       />
-    */
-    align?: 'center' | 'flex-start' | 'flex-end' | 'space-between' | 'space-around' | 'stretch' | 'inherit' | 'initial' | 'unset';
-    /**
-     * align-items values
-     * @example
-     * <Form
-     *      alignItems='stretch'
-        />
-     */
-    alignItems?: 'normal' | 'stretch' | 'center' | 'start' | 'end' | 'flex-start' | 'flex-end' | 'self-start' | 'self-end' | 'baseline' | 'first baseline' | 'last baseline' | 'safe center' | 'unsafe center' | 'inherit' | 'initial' | 'unset';
-    /**
-     * Defined in Grid tag with row props. Indicates column spacing, ranging from 0 to infinity. Default 0.
-     * (0...infinity)
-     * @example
-     * <Form
-     *      spacing={2}
-        />
-        or
-        <Form
-     *      spacing={{
-                xs: 2,
-                sm: 4,
-                md: 5,
-            }}
-        />
-     */
-    spacing?: number | Breakpoints;
-}
+declare type Row = DrgProps;
 interface Col extends Breakpoints {
     /**
      * Align-self values. Default `wrap`

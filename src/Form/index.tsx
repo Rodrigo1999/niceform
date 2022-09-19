@@ -30,11 +30,12 @@ let Form = function (props: Props, ref) {
         context: {}
     });
 
-    props = { ...Context.current.context, ...props }
+    const [ctx, setCtx] = useState(Context.current.context)
     const isSubmited = useRef(false)
     const form = useRef<HTMLFormElement>(null);
     const [fieldsFromRender, setFieldsFromRender] = useState<Array<Field>>([]);
 
+    props = { ...ctx, ...props }
     let fields = props.fields?.concat?.(props.staticFields || [])
 
     const hookValues = useValues({
@@ -48,6 +49,10 @@ let Form = function (props: Props, ref) {
         getErrorsControl: () => Context.current.errorsControl || [],
         yupSchema: props.validationSchema
     });
+
+    useEffect(() => {
+        if(!dequal(Context.current.context, ctx)) setCtx(Context.current.context)
+    }, [Context.current.context])
 
     const getStates = useData({
         fieldsFromRender, 
@@ -206,9 +211,9 @@ let Form = function (props: Props, ref) {
 
     const configRow = {
         row: true,
-        alignItems: props.alignItems || 'flex-start',
+        align: props.align || 'flex-start',
         justify: props.justify,
-        align: props.align,
+        alignContent: props.alignContent,
         direction: props.direction,
         spacing: props.spacing || 2,
     }
