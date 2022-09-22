@@ -1,6 +1,7 @@
 import { ReturnUseErrorsFunctionParams, errorsControl } from './hooks';
 import type {Breakpoints, Props as DrgProps} from 'dynamic-react-grid'
 
+type Object = {[key: string]: any}
 export {Breakpoints}
 export type ValueKeys = {
     [key: string]: any
@@ -27,7 +28,7 @@ interface ContentParams {
     /**
      * Returns all error postings regarding form fields
      */
-    errors: object,
+    errors: Object,
     /**
       * With this function we can change the value of a certain form field
       */

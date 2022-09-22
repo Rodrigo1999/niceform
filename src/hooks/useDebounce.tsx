@@ -43,7 +43,6 @@ export default function useDebounce(name: string, callback?: Function){
 
         const value = getValue(foo)
        
-        console.log('----', name, value)
         if(enableDebounce) {
             onChangeDebounce(name, value, bar, callback || _changeValue)
             setValue(value)
