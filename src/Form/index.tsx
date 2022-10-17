@@ -216,6 +216,8 @@ let Form = function (props: Props, ref) {
         alignContent: props.alignContent,
         direction: props.direction,
         spacing: props.spacing || 2,
+        spacingY: props.spacingY || props.spacing,
+        spacingX: props.spacingX || props.spacing,
     }
 
     const _getComponentBase = (components, field) => getComponentBase(components, field) || getComponentBase(components, field, 'default')

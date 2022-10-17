@@ -698,8 +698,8 @@ export interface Props extends Row {
      *  />
      */
     grid?: {
-        row: Row;
-        col: Col & JSX.IntrinsicElements['div'];
+        row?: Partial<Row>;
+        col?: Partial<Col> & JSX.IntrinsicElements['div'];
     };
     /**
      * Schema `yup` to be passed for error handling

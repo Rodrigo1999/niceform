@@ -253,6 +253,8 @@ var Form = function (props, ref) {
         alignContent: props.alignContent,
         direction: props.direction,
         spacing: props.spacing || 2,
+        spacingY: props.spacingY || props.spacing,
+        spacingX: props.spacingX || props.spacing,
     };
     var _getComponentBase = function (components, field) { return (0, utils_1.getComponentBase)(components, field) || (0, utils_1.getComponentBase)(components, field, 'default'); };
     function getFieldComponent(field) {
