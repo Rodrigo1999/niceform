@@ -56,7 +56,7 @@ export default function useDebounce(name: string, callback?: Function){
 
 function getValue(foo){
     let value
-    if((typeof foo !== 'string') && foo.constructor !== {}.constructor && foo?.target) value = (foo?.target as any)?.value
+    if((typeof foo !== 'string') && foo?.constructor !== {}.constructor && foo?.target) value = (foo?.target as any)?.value
     else value = foo
 
     return value

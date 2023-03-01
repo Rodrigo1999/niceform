@@ -54,7 +54,7 @@ exports.default = useDebounce;
 function getValue(foo) {
     var _a;
     var value;
-    if ((typeof foo !== 'string') && foo.constructor !== {}.constructor && (foo === null || foo === void 0 ? void 0 : foo.target))
+    if ((typeof foo !== 'string') && (foo === null || foo === void 0 ? void 0 : foo.constructor) !== {}.constructor && (foo === null || foo === void 0 ? void 0 : foo.target))
         value = (_a = foo === null || foo === void 0 ? void 0 : foo.target) === null || _a === void 0 ? void 0 : _a.value;
     else
         value = foo;
